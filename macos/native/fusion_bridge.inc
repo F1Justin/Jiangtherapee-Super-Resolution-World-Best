@@ -47,6 +47,10 @@ std::mutex fusion_init_lock;
 id<MTLCommandQueue> fusion_queue;
 NSDictionary *fusion_pipelines;
 void init_fusion(const char *source,id<MTLDevice> device) {
+#ifdef JSR_EMBEDDED_FUSION
+    if (!source) source = jsr_embedded_fusion;
+#endif
+    if (!source) throw std::runtime_error("Fusion shader is unavailable");
     std::lock_guard<std::mutex> guard(fusion_init_lock);
     if(fusion_pipelines) return;
     // Match the release WGSL lowering for taps; local features use precise CPU-compatible arithmetic.

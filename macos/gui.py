@@ -126,6 +126,8 @@ class Application:
             return
         output = Path(self.destination.get()).expanduser() / datetime.now().strftime("JSR_%Y%m%d_%H%M%S")
         runner = "run_stormer.py" if required == 7 else ("run_v98.py" if mode == "v9.8 K14" else "run_fast.py")
+        if not (ROOT / runner).is_file():
+            runner += "c"
         command = [sys.executable, str(ROOT / runner), "--output-dir", str(output), "--out-tiff", "on"]
         if required == 7:
             command += ["--backend", "Metal", "--grid", "256", "--memory-gb", "4", "--confirm-equal-exposure"]

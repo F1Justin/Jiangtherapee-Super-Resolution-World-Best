@@ -10,7 +10,8 @@ import psutil
 from metal_graph import FLOAT, METRICS, library
 
 INT = ctypes.POINTER(ctypes.c_int32)
-SHADER_SOURCE = Path(__file__).with_name('native').joinpath('fusion.metal').read_bytes()
+shader_path = Path(__file__).with_name('native').joinpath('fusion.metal')
+SHADER_SOURCE = shader_path.read_bytes() if shader_path.is_file() else None
 METRICS_FUSION = {'precision': 'float32', 'tap_math': 'release-compatible MSL 3.1 on macOS 14+ / MSL 3.0 on macOS 13; preserved invariance',
                   'frontend_fast_math': False, 'scheduling': 'one resident tile, asynchronous stages on one queue',
                   'tiles': 0, 'uploaded_bytes': 0, 'downloaded_bytes': 0, 'peak_allocated_bytes': 0}

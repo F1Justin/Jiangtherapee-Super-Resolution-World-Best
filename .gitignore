@@ -6,3 +6,4 @@ macos/vendor/
 macos/validation/
 macos/ACCEPTANCE.json
 macos/JSR Metal.app/
+macos/dist/

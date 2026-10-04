@@ -1,5 +1,6 @@
 """Build the native FP32 MPSGraph inference bridge on Apple Silicon."""
 from pathlib import Path
+import argparse
 import platform
 import subprocess
 import hashlib
@@ -7,20 +8,33 @@ import json
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path)
+    parser.add_argument('--embed-fusion', action='store_true')
+    args = parser.parse_args()
     if platform.system() != 'Darwin' or platform.machine() != 'arm64':
         raise SystemExit('Native Apple Silicon build required')
     root = Path(__file__).resolve().parent
-    output = root / 'vendor/metal/jsr_graph.dylib'
+    output = args.output or root / 'vendor/metal/jsr_graph.dylib'
     output.parent.mkdir(parents=True, exist_ok=True)
     staging = output.with_suffix('.staging.dylib')
+    extra = []
+    header = output.parent / 'fusion_embedded.h'
+    if args.embed_fusion:
+        shader = (root / 'native/fusion.metal').read_text()
+        header.write_text('#define JSR_EMBEDDED_FUSION 1\nstatic const char jsr_embedded_fusion[] = '
+                          + json.dumps(shader) + ';\n')
+        extra = ['-include', str(header)]
     subprocess.run(['xcrun', 'clang++', '-std=c++17', '-O3', '-fobjc-arc', '-dynamiclib',
                     '-arch', 'arm64', '-mmacosx-version-min=13.0',
-                    str(root / 'native/graph_bridge.mm'), '-o', str(staging),
+                    *extra, str(root / 'native/graph_bridge.mm'), '-o', str(staging),
                     '-framework', 'Foundation', '-framework', 'Metal',
                     '-framework', 'MetalPerformanceShaders', '-framework', 'MetalPerformanceShadersGraph'], check=True)
     subprocess.run(['codesign', '--force', '--sign', '-', str(staging)], check=True)
     staging.replace(output)
     record_build(output)
+    if args.embed_fusion:
+        header.unlink()
     print(output)
 
 

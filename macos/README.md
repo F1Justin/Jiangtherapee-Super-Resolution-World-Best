@@ -4,6 +4,17 @@
 
 ## 启动
 
+独立 portable 包使用 `JSR Bridge.app`，并提供同目录的 `jsr` CLI 和 `启动 GUI.command`。完整目录解压后可移动；Python、模型、原生库与 ExifTool 随包携带。要求 Apple Silicon 与 macOS 14 及以上。输出、配准缓存和处理日志写入用户选择的输出目录。
+
+```sh
+./jsr doctor --gui-test --self-test
+./jsr fast --help
+./jsr stormer --help
+./jsr v98 --help
+```
+
+本地预览包采用 ad-hoc 签名，Apple 公证尚未完成。第三方许可和 LibRaw 源码/补丁保存在包内。构建入口为 `macos/.venv/bin/python macos/build_portable.py`，产物写入忽略目录 `macos/dist`。打包后的运行过程使用同包依赖。私有运行产物与源码发布范围保持本地，公开 Release 由作者确认。
+
 双击 `JSR Metal.app` 或 `JSR Metal.command`，选择模式、同组 RAW 连拍和输出目录。Stormer 使用 7 张，两个 K14 模式使用 14 张。每次处理创建独立时间戳目录，并保存日志、DNG 与 16-bit TIFF。
 
 Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口自动换算为归一化单位。黑电平从照片读取；满阱默认 20000 e⁻ 是测试参数，可填写实测值。v9.8 沿用原版处理流程。三个模式保留照片旋转标记。v9.8 的“计算方式”选择器提供 Apple 优化和原版 WGPU 两个 FP32 后端。
