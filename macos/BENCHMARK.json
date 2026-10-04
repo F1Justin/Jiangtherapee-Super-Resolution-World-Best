@@ -1,0 +1,1272 @@
+{
+  "measured_at_utc": "2026-10-03T12:49:45.095663+00:00",
+  "release": "jb-v2.3.9",
+  "hardware": {
+    "chip": "Apple M2 Pro",
+    "gpu_cores": 16,
+    "memory_gib": 32,
+    "architecture": "arm64",
+    "os": "macOS 27.2",
+    "python": "3.10.16"
+  },
+  "input": {
+    "camera": "Nikon Z6 III",
+    "compression": "High Efficiency*",
+    "frames": 14,
+    "native_hw": [
+      4040,
+      6064
+    ],
+    "iso": 2000,
+    "shutter_seconds": 0.0013333333333333333
+  },
+  "output": {
+    "hwc": [
+      8080,
+      12128,
+      3
+    ],
+    "dtype": "uint16",
+    "formats": [
+      "camera-linear DNG",
+      "color-rendered TIFF"
+    ]
+  },
+  "v98_wgpu_baseline": {
+    "status": "COMPLETE",
+    "product_elapsed_seconds": 1926.3934457302094,
+    "pure_reconstruction_seconds": 1864.841351125011,
+    "original_speed_gate": {
+      "status": "FAIL",
+      "limit_seconds": 900.0,
+      "actual_seconds": 1864.841351125011
+    },
+    "all_input_frames_used": true
+  },
+  "v98_apple_memory_profile": {
+    "status": "COMPLETE",
+    "product_elapsed_seconds": 486.9540500640869,
+    "pure_reconstruction_seconds": 470.8403869169997,
+    "original_speed_gate": {
+      "status": "PASS",
+      "limit_seconds": 900.0,
+      "actual_seconds": 470.8403869169997
+    },
+    "all_input_frames_used": true,
+    "macos_port": {
+      "network_backend": "mpsgraph",
+      "rarm_executor": "MPSGraph FP32",
+      "controller_executor": "MPSGraph FP32",
+      "merge_executor": "WGPU Metal",
+      "original_manifest_contract": "Windows release WGPU route",
+      "reduced_precision_fast_math": false,
+      "resources": {
+        "minimum_free_disk_bytes": 5787131904,
+        "peak_rss_bytes": 6875021312
+      },
+      "native_network_metrics": {
+        "controller": {
+          "calls": 384,
+          "seconds": 34.4426974192902,
+          "peak_metal_allocated_bytes": 1749630976,
+          "peak_rss_bytes": 6282346496
+        },
+        "rarm": {
+          "calls": 384,
+          "seconds": 267.26400899217697,
+          "peak_metal_allocated_bytes": 1371602944,
+          "peak_rss_bytes": 6664830976
+        }
+      },
+      "tile_profile": {
+        "block_native": 256,
+        "halo_native": 48,
+        "available_memory_at_selection": 11762401280
+      },
+      "apfs_clones": {
+        "files": 1,
+        "logical_bytes": 1175931008
+      },
+      "native_build": {
+        "precision": "float32",
+        "reduced_precision_fast_math": false,
+        "architecture": "arm64",
+        "minimum_macos": "13.0",
+        "source_sha256": "52b534bb460ad2ae3634e0c42a849f477c5dbd79b0ea8fe0d2614b7263651e54",
+        "library_sha256": "14556f5a3457ac1e2300f46a46be5a8f5133165ad0d5ddbc5043e267750eb546",
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+      }
+    }
+  },
+  "cache_policy_for_comparison": "Both reconstruction timings use prepared alignment caches",
+  "reconstruction_and_export_speedup": 3.95600662008393,
+  "pure_reconstruction_speedup": 3.960665658559463,
+  "original_output_parity": {
+    "shape": [
+      8080,
+      12128,
+      3
+    ],
+    "dtype": "uint16",
+    "max_abs_dn": 1,
+    "rmse_dn": 0.007565358981115484,
+    "changed_sample_fraction": 5.723465651314472e-05,
+    "channel_mean_signed_dn": [
+      2.1633924606180936e-06,
+      3.0001763368949032e-06,
+      2.42871417748635e-06
+    ],
+    "channel_rmse_dn": [
+      0.0069972895783732844,
+      0.008092814426439505,
+      0.007566258173961248
+    ],
+    "dark_below_one_percent_rmse_dn": 0.0062769319597285106,
+    "metadata_equal": {
+      "Orientation": true,
+      "BlackLevel": true,
+      "WhiteLevel": true,
+      "ColorMatrix1": true,
+      "AsShotNeutral": true,
+      "PhotometricInterpretation": true
+    },
+    "gate": {
+      "max_abs_dn_limit": 4,
+      "rmse_dn_limit": 0.5
+    },
+    "passed": true
+  },
+  "dng_readback_verified": true,
+  "other_modes": {
+    "fast_k14": {
+      "scope": "14 frames, full image",
+      "seconds": 381.699,
+      "executor": "original WGPU Metal"
+    },
+    "stormer_k7": {
+      "scope": "7 frames, 512 x 512 native ROI, deghost off/on pair",
+      "seconds": 52.8,
+      "full_image_timing_verified": false,
+      "executor": "original WGPU Metal"
+    }
+  },
+  "v98_apple_cold_start": {
+    "status": "COMPLETE",
+    "product_elapsed_seconds": 405.82746481895447,
+    "pure_reconstruction_seconds": 345.99009545799345,
+    "original_speed_gate": {
+      "status": "PASS",
+      "limit_seconds": 900.0,
+      "actual_seconds": 345.99009545799345
+    },
+    "all_input_frames_used": true,
+    "macos_port": {
+      "network_backend": "mpsgraph",
+      "rarm_executor": "MPSGraph FP32",
+      "controller_executor": "MPSGraph FP32",
+      "merge_executor": "WGPU Metal",
+      "original_manifest_contract": "Windows release WGPU route",
+      "reduced_precision_fast_math": false,
+      "resources": {
+        "minimum_free_disk_bytes": 58896474112,
+        "peak_rss_bytes": 10160029696
+      },
+      "native_network_metrics": {
+        "controller": {
+          "calls": 176,
+          "seconds": 27.301870956172934,
+          "peak_metal_allocated_bytes": 3511762944,
+          "peak_rss_bytes": 9978232832
+        },
+        "rarm": {
+          "calls": 176,
+          "seconds": 203.7292940010375,
+          "peak_metal_allocated_bytes": 2368290816,
+          "peak_rss_bytes": 9990111232
+        }
+      },
+      "tile_profile": {
+        "block_native": 384,
+        "halo_native": 48,
+        "available_memory_at_selection": 12998295552
+      },
+      "apfs_clones": {
+        "files": 1,
+        "logical_bytes": 1175931008
+      },
+      "native_build": {
+        "precision": "float32",
+        "reduced_precision_fast_math": false,
+        "architecture": "arm64",
+        "minimum_macos": "13.0",
+        "source_sha256": "52b534bb460ad2ae3634e0c42a849f477c5dbd79b0ea8fe0d2614b7263651e54",
+        "library_sha256": "14556f5a3457ac1e2300f46a46be5a8f5133165ad0d5ddbc5043e267750eb546",
+        "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+      }
+    },
+    "cold_cache": true,
+    "frames": 14,
+    "process_wall_seconds": 409.40466429200023,
+    "exit_code": 0,
+    "scope": "RAW decode, alignment, reconstruction, DNG/TIFF export and orientation update",
+    "original_output_parity": {
+      "shape": [
+        8080,
+        12128,
+        3
+      ],
+      "dtype": "uint16",
+      "max_abs_dn": 1,
+      "rmse_dn": 0.007351230592853664,
+      "changed_sample_fraction": 5.404059122930763e-05,
+      "channel_mean_signed_dn": [
+        1.969503513675906e-06,
+        2.8062873899527156e-06,
+        2.132778416364064e-06
+      ],
+      "channel_rmse_dn": [
+        0.006801310231700857,
+        0.007845026044062413,
+        0.007370177690399775
+      ],
+      "dark_below_one_percent_rmse_dn": 0.005972309010505814,
+      "metadata_equal": {
+        "Orientation": true,
+        "BlackLevel": true,
+        "WhiteLevel": true,
+        "ColorMatrix1": true,
+        "AsShotNeutral": true,
+        "PhotometricInterpretation": true
+      },
+      "gate": {
+        "max_abs_dn_limit": 4,
+        "rmse_dn_limit": 0.5
+      },
+      "passed": true
+    }
+  },
+  "current_build_validation": {
+    "build": {
+      "precision": "float32",
+      "reduced_precision_fast_math": false,
+      "architecture": "arm64",
+      "minimum_macos": "13.0",
+      "source_sha256": "ba4f10cc55477ea5fe50bb411afbd161f39d240f510f36da700842acab302c5f",
+      "library_sha256": "691d19532252e972d52417a7b78ef50e27499516d27a2e1a6b358b26685b5c88",
+      "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+    },
+    "core": {
+      "status": "passed",
+      "scope": "synthetic core inference; complete RAW pipeline available through macos launchers",
+      "network_backend": "mpsgraph",
+      "python": "3.10.16",
+      "architecture": "arm64",
+      "adapter": {
+        "vendor": "",
+        "architecture": "",
+        "device": "Apple M2 Pro",
+        "description": "",
+        "stackgroup_min_size": 4,
+        "stackgroup_max_size": 128,
+        "vendor_id": 0,
+        "device_id": 0,
+        "adapter_type": "IntegratedGPU",
+        "backend_type": "Metal"
+      },
+      "frames": 14,
+      "convolution_max_abs_error": 1.9073486328125e-06,
+      "frontend_parity": "passed",
+      "controller": {
+        "shape": [
+          36,
+          32,
+          40
+        ],
+        "min": -6.5483903884887695,
+        "max": 8.290597915649414,
+        "first_forward_seconds": 0.09230308400583453
+      },
+      "refinenet": {
+        "shape": [
+          3,
+          32,
+          40
+        ],
+        "min": 0.08200730383396149,
+        "max": 0.5923537015914917,
+        "first_forward_seconds": 0.11086962500121444
+      }
+    },
+    "network_parity": {
+      "controller": [
+        {
+          "shape": [
+            151,
+            19,
+            23
+          ],
+          "max_abs": 1.1444091796875e-05,
+          "rmse": 1.0594073049678734e-06
+        },
+        {
+          "shape": [
+            151,
+            24,
+            32
+          ],
+          "max_abs": 1.0967254638671875e-05,
+          "rmse": 1.2233424561665447e-06
+        },
+        {
+          "shape": [
+            151,
+            31,
+            35
+          ],
+          "max_abs": 1.1920928955078125e-05,
+          "rmse": 1.2744061918053227e-06
+        }
+      ],
+      "rarm": [
+        {
+          "shape": [
+            1,
+            6,
+            19,
+            23
+          ],
+          "max_abs": 7.213093340396881e-07,
+          "rmse": 1.8089166215953902e-07
+        },
+        {
+          "shape": [
+            2,
+            6,
+            24,
+            32
+          ],
+          "max_abs": 1.6689300537109375e-06,
+          "rmse": 3.5647324568421567e-07
+        },
+        {
+          "shape": [
+            1,
+            6,
+            31,
+            35
+          ],
+          "max_abs": 2.682209014892578e-06,
+          "rmse": 6.209617446125771e-07
+        }
+      ]
+    }
+  },
+  "v98_apple_phase2": {
+    "measured_local_date": "2026-10-04",
+    "precision": "float32",
+    "defaults": {
+      "native_fusion": true,
+      "fold_film": true,
+      "rarm_halo_native": 24,
+      "fusion_halo_native": 48,
+      "controller_cache": 1,
+      "rarm_cache": 1
+    },
+    "cache_policy": "exact shape LRU with an estimated workspace budget; capacity 3 remains optional",
+    "scheduling": "one resident tile; asynchronous phases, Controller and learned merge on the same Metal queue",
+    "cold_process_seconds_before": 409.405,
+    "cold_process_seconds_after": 249.3621801249974,
+    "cold_process_reduction_fraction": 0.3909156455710179,
+    "runs": {
+      "baseline": {
+        "product_elapsed_seconds": 386.3855309486389,
+        "process_wall_seconds": 390.4626228340203,
+        "cache": "prepared alignment cache",
+        "pure_reconstruction_seconds": 323.9359635839937,
+        "stage_sum_seconds": {
+          "prepare": 1.9669697050994728,
+          "wgpu_phase_legacy": 51.894679305900354,
+          "wgpu_controller": 48.05506558899651,
+          "wgpu_learned_merge": 13.481989750958746,
+          "merge_total": 133.33293582912302,
+          "lca_estimation": 1.2578407500113826,
+          "lca_warp_learned_and_legacy": 8.602264295244822,
+          "wgpu_local_gain_rarm_tta1": 177.3038918300008,
+          "refine_total": 185.9078377111291
+        },
+        "peak_rss_bytes": 7866548224,
+        "refinement_halo_native": 48,
+        "native_network_metrics": {
+          "controller": {
+            "calls": 176,
+            "seconds": 29.030690207961015,
+            "peak_metal_allocated_bytes": 3511762944,
+            "peak_rss_bytes": 6975225856
+          },
+          "rarm": {
+            "calls": 176,
+            "seconds": 171.69246158230817,
+            "peak_metal_allocated_bytes": 2368290816,
+            "peak_rss_bytes": 6693289984
+          }
+        },
+        "native_build": {
+          "precision": "float32",
+          "reduced_precision_fast_math": false,
+          "architecture": "arm64",
+          "minimum_macos": "13.0",
+          "source_sha256": "ba4f10cc55477ea5fe50bb411afbd161f39d240f510f36da700842acab302c5f",
+          "library_sha256": "691d19532252e972d52417a7b78ef50e27499516d27a2e1a6b358b26685b5c88",
+          "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+        },
+        "parity": {
+          "shape": [
+            8080,
+            12128,
+            3
+          ],
+          "dtype": "uint16",
+          "max_abs_dn": 1,
+          "rmse_dn": 0.007351230592853664,
+          "changed_sample_fraction": 5.404059122930763e-05,
+          "channel_mean_signed_dn": [
+            1.969503513675906e-06,
+            2.8062873899527156e-06,
+            2.132778416364064e-06
+          ],
+          "channel_rmse_dn": [
+            0.006801310231700857,
+            0.007845026044062413,
+            0.007370177690399775
+          ],
+          "dark_below_one_percent_rmse_dn": 0.005972309010505814,
+          "seam_rmse_dn": 0.007519102843361758,
+          "seam_max_abs_dn": 1,
+          "seam_band_output_pixels": 2,
+          "block_native": 384,
+          "gate": {
+            "max_abs_dn_limit": 1,
+            "rmse_dn_limit": 0.02,
+            "dark_rmse_dn_limit": 0.02,
+            "seam_rmse_dn_limit": 0.02,
+            "channel_rmse_dn_limit": 0.02
+          },
+          "passed": true,
+          "metadata_equal": {
+            "Orientation": true,
+            "BlackLevel": true,
+            "WhiteLevel": true,
+            "ColorMatrix1": true,
+            "AsShotNeutral": true,
+            "PhotometricInterpretation": true
+          }
+        },
+        "all_input_frames_used": true
+      },
+      "controller_cache_3": {
+        "product_elapsed_seconds": 411.0168077945709,
+        "process_wall_seconds": 414.8000971250003,
+        "cache": "prepared alignment cache",
+        "pure_reconstruction_seconds": 346.76923995799734,
+        "stage_sum_seconds": {
+          "prepare": 1.9271164989913814,
+          "wgpu_phase_legacy": 57.932704335893504,
+          "wgpu_controller": 55.75026154186344,
+          "wgpu_learned_merge": 13.848164162947796,
+          "merge_total": 148.30951378599275,
+          "lca_estimation": 2.0387480829958804,
+          "lca_warp_learned_and_legacy": 9.159203496092232,
+          "wgpu_local_gain_rarm_tta1": 183.91328612767393,
+          "refine_total": 193.07407774988678
+        },
+        "peak_rss_bytes": 8333000704,
+        "refinement_halo_native": 48,
+        "native_network_metrics": {
+          "controller": {
+            "calls": 176,
+            "seconds": 35.61786345706787,
+            "peak_metal_allocated_bytes": 6703316992,
+            "peak_rss_bytes": 7035617280,
+            "native": {
+              "shape_calls": {
+                "1,496,960": 14,
+                "1,960,960": 126,
+                "1,864,864": 1,
+                "1,864,704": 1,
+                "1,864,960": 14,
+                "1,496,864": 1,
+                "1,960,864": 9,
+                "1,496,704": 1,
+                "1,960,704": 9
+              },
+              "cache_hits": 167,
+              "cache_misses": 9,
+              "cache_budget_bytes": 6285649510,
+              "input_copy_wall_seconds": 4.7801352040000005,
+              "cache_evictions": 6,
+              "run_readback_wall_seconds": 29.149016636000027,
+              "input_bytes": 90648320000,
+              "output_bytes": 21611520000,
+              "cached_estimated_bytes": 2221889536,
+              "cache_capacity": 3,
+              "build_wall_seconds": 0.883071833
+            },
+            "folded_film": false
+          },
+          "rarm": {
+            "calls": 176,
+            "seconds": 178.08480012518703,
+            "peak_metal_allocated_bytes": 2556231680,
+            "peak_rss_bytes": 4665114624,
+            "native": {
+              "shape_calls": {
+                "1,496,960": 14,
+                "1,960,960": 126,
+                "1,864,864": 1,
+                "1,864,704": 1,
+                "1,864,960": 14,
+                "1,496,864": 1,
+                "1,960,864": 9,
+                "1,496,704": 1,
+                "1,960,704": 9
+              },
+              "cache_hits": 143,
+              "cache_misses": 33,
+              "cache_budget_bytes": 6277321523,
+              "input_copy_wall_seconds": 0.17763727999999987,
+              "cache_evictions": 32,
+              "run_readback_wall_seconds": 172.90904838299997,
+              "input_bytes": 3601920000,
+              "output_bytes": 1800960000,
+              "cached_estimated_bytes": 1308741632,
+              "cache_capacity": 1,
+              "build_wall_seconds": 4.591041791000001
+            },
+            "folded_film": false
+          }
+        },
+        "native_build": {
+          "precision": "float32",
+          "reduced_precision_fast_math": false,
+          "architecture": "arm64",
+          "minimum_macos": "13.0",
+          "source_sha256": "b14b7fb46c4b84e5074a6b7f43feb7ddcaad73412d1057d73b2d30be834888cc",
+          "library_sha256": "7fe55ba7165f3da0d46cb81059db556d56937cd368bfef859b60cbc76639d4d4",
+          "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+        },
+        "parity": {
+          "shape": [
+            8080,
+            12128,
+            3
+          ],
+          "dtype": "uint16",
+          "max_abs_dn": 1,
+          "rmse_dn": 0.007351230592853664,
+          "changed_sample_fraction": 5.404059122930763e-05,
+          "channel_mean_signed_dn": [
+            1.969503513675906e-06,
+            2.8062873899527156e-06,
+            2.132778416364064e-06
+          ],
+          "channel_rmse_dn": [
+            0.006801310231700857,
+            0.007845026044062413,
+            0.007370177690399775
+          ],
+          "dark_below_one_percent_rmse_dn": 0.005972309010505814,
+          "seam_rmse_dn": 0.007519102843361758,
+          "seam_max_abs_dn": 1,
+          "seam_band_output_pixels": 2,
+          "block_native": 384,
+          "gate": {
+            "max_abs_dn_limit": 1,
+            "rmse_dn_limit": 0.02,
+            "dark_rmse_dn_limit": 0.02,
+            "seam_rmse_dn_limit": 0.02,
+            "channel_rmse_dn_limit": 0.02
+          },
+          "passed": true,
+          "metadata_equal": {
+            "Orientation": true,
+            "BlackLevel": true,
+            "WhiteLevel": true,
+            "ColorMatrix1": true,
+            "AsShotNeutral": true,
+            "PhotometricInterpretation": true
+          }
+        },
+        "all_input_frames_used": true
+      },
+      "halo_24_constant_film": {
+        "product_elapsed_seconds": 308.55484223365784,
+        "process_wall_seconds": 311.92341666601715,
+        "cache": "prepared alignment cache",
+        "pure_reconstruction_seconds": 256.746496458014,
+        "stage_sum_seconds": {
+          "prepare": 1.514373293844983,
+          "wgpu_phase_legacy": 44.78374187924783,
+          "wgpu_controller": 42.12902796297567,
+          "wgpu_learned_merge": 12.433512789109955,
+          "merge_total": 116.99572147100116,
+          "lca_estimation": 0.505193416000111,
+          "lca_warp_learned_and_legacy": 2.342078082030639,
+          "wgpu_local_gain_rarm_tta1": 134.41343023980153,
+          "refine_total": 136.7566887474386
+        },
+        "peak_rss_bytes": 11273977856,
+        "refinement_halo_native": 24,
+        "native_network_metrics": {
+          "controller": {
+            "calls": 176,
+            "seconds": 24.695532457873924,
+            "peak_metal_allocated_bytes": 3719380992,
+            "peak_rss_bytes": 10677125120,
+            "native": {
+              "shape_calls": {
+                "1,496,960": 14,
+                "1,960,960": 126,
+                "1,864,864": 1,
+                "1,864,704": 1,
+                "1,864,960": 14,
+                "1,496,864": 1,
+                "1,960,864": 9,
+                "1,496,704": 1,
+                "1,960,704": 9
+              },
+              "cache_hits": 143,
+              "cache_misses": 33,
+              "cache_budget_bytes": 6700150784,
+              "input_copy_wall_seconds": 2.7405583379999996,
+              "cache_evictions": 32,
+              "run_readback_wall_seconds": 18.704690714999998,
+              "input_bytes": 90648320000,
+              "output_bytes": 21611520000,
+              "cached_estimated_bytes": 618754048,
+              "cache_capacity": 1,
+              "build_wall_seconds": 2.939687795
+            },
+            "folded_film": false
+          },
+          "rarm": {
+            "calls": 176,
+            "seconds": 129.90331858198624,
+            "peak_metal_allocated_bytes": 1893318656,
+            "peak_rss_bytes": 10722508800,
+            "native": {
+              "shape_calls": {
+                "1,864,816": 9,
+                "1,864,656": 9,
+                "1,816,816": 1,
+                "1,864,864": 126,
+                "1,816,656": 1,
+                "1,816,864": 14,
+                "1,448,816": 1,
+                "1,448,864": 14,
+                "1,448,656": 1
+              },
+              "cache_hits": 143,
+              "cache_misses": 33,
+              "cache_budget_bytes": 6700150784,
+              "input_copy_wall_seconds": 0.09078995699999999,
+              "cache_evictions": 32,
+              "run_readback_wall_seconds": 126.47651808100004,
+              "input_bytes": 2943713280,
+              "output_bytes": 1471856640,
+              "cached_estimated_bytes": 1101492224,
+              "cache_capacity": 1,
+              "build_wall_seconds": 3.1036614999999994
+            },
+            "folded_film": true
+          }
+        },
+        "native_build": {
+          "precision": "float32",
+          "reduced_precision_fast_math": false,
+          "architecture": "arm64",
+          "minimum_macos": "13.0",
+          "source_sha256": "b14b7fb46c4b84e5074a6b7f43feb7ddcaad73412d1057d73b2d30be834888cc",
+          "library_sha256": "7fe55ba7165f3da0d46cb81059db556d56937cd368bfef859b60cbc76639d4d4",
+          "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+        },
+        "parity": {
+          "shape": [
+            8080,
+            12128,
+            3
+          ],
+          "dtype": "uint16",
+          "max_abs_dn": 1,
+          "rmse_dn": 0.007351230592853664,
+          "changed_sample_fraction": 5.404059122930763e-05,
+          "channel_mean_signed_dn": [
+            1.969503513675906e-06,
+            2.8062873899527156e-06,
+            2.132778416364064e-06
+          ],
+          "channel_rmse_dn": [
+            0.006801310231700857,
+            0.007845026044062413,
+            0.007370177690399775
+          ],
+          "dark_below_one_percent_rmse_dn": 0.005972309010505814,
+          "seam_rmse_dn": 0.007519102843361758,
+          "seam_max_abs_dn": 1,
+          "seam_band_output_pixels": 2,
+          "block_native": 384,
+          "gate": {
+            "max_abs_dn_limit": 1,
+            "rmse_dn_limit": 0.02,
+            "dark_rmse_dn_limit": 0.02,
+            "seam_rmse_dn_limit": 0.02,
+            "channel_rmse_dn_limit": 0.02
+          },
+          "passed": true,
+          "metadata_equal": {
+            "Orientation": true,
+            "BlackLevel": true,
+            "WhiteLevel": true,
+            "ColorMatrix1": true,
+            "AsShotNeutral": true,
+            "PhotometricInterpretation": true
+          }
+        },
+        "all_input_frames_used": true
+      },
+      "native_frontend_cold": {
+        "product_elapsed_seconds": 245.99384903907776,
+        "process_wall_seconds": 249.3621801249974,
+        "cache": "RAW decode and alignment included",
+        "pure_reconstruction_seconds": 193.1421890410129,
+        "stage_sum_seconds": {
+          "prepare": 1.6336294992943294,
+          "wgpu_phase_legacy": 5.335197495995089,
+          "wgpu_controller": 3.731469843973173,
+          "wgpu_learned_merge": 30.265409543033456,
+          "merge_total": 41.73245011616382,
+          "lca_estimation": 0.4543675000022631,
+          "lca_warp_learned_and_legacy": 9.047069705353351,
+          "wgpu_local_gain_rarm_tta1": 138.30705967298127,
+          "refine_total": 147.35550683288602
+        },
+        "peak_rss_bytes": 9451913216,
+        "refinement_halo_native": 24,
+        "native_network_metrics": {
+          "controller": {
+            "calls": 176,
+            "seconds": 3.577009664819343,
+            "peak_metal_allocated_bytes": 4782489600,
+            "native": {
+              "shape_calls": {
+                "1,496,960": 14,
+                "1,960,960": 126,
+                "1,864,864": 1,
+                "1,864,704": 1,
+                "1,864,960": 14,
+                "1,496,864": 1,
+                "1,960,864": 9,
+                "1,496,704": 1,
+                "1,960,704": 9
+              },
+              "cache_hits": 143,
+              "cache_misses": 33,
+              "cache_budget_bytes": 6700150784,
+              "input_copy_wall_seconds": 0,
+              "cache_evictions": 32,
+              "run_readback_wall_seconds": 0,
+              "input_bytes": 0,
+              "output_bytes": 0,
+              "cached_estimated_bytes": 618754048,
+              "cache_capacity": 1,
+              "build_wall_seconds": 3.190427003
+            },
+            "gpu_resident_io": true,
+            "seconds_semantics": "host enqueue including graph compilation; GPU completion belongs to merge_total",
+            "peak_rss_bytes": 8462155776
+          },
+          "rarm": {
+            "calls": 176,
+            "seconds": 133.0782605051645,
+            "peak_metal_allocated_bytes": 2129772544,
+            "peak_rss_bytes": 9453797376,
+            "native": {
+              "shape_calls": {
+                "1,864,816": 9,
+                "1,864,656": 9,
+                "1,816,816": 1,
+                "1,864,864": 126,
+                "1,816,656": 1,
+                "1,816,864": 14,
+                "1,448,816": 1,
+                "1,448,864": 14,
+                "1,448,656": 1
+              },
+              "cache_hits": 143,
+              "cache_misses": 33,
+              "cache_budget_bytes": 6700150784,
+              "input_copy_wall_seconds": 0.12600025499999995,
+              "cache_evictions": 32,
+              "run_readback_wall_seconds": 129.10887854499995,
+              "input_bytes": 2943713280,
+              "output_bytes": 1471856640,
+              "cached_estimated_bytes": 1101492224,
+              "cache_capacity": 1,
+              "build_wall_seconds": 3.4218659589999993
+            },
+            "folded_film": true
+          }
+        },
+        "native_build": {
+          "precision": "float32",
+          "reduced_precision_fast_math": false,
+          "architecture": "arm64",
+          "minimum_macos": "13.0",
+          "source_sha256": "1ea26ff93b84002bee4a11af2dde24275d483f27daa2d0463170b4975b011fdb",
+          "native_sources_sha256": {
+            "fusion.metal": "d91c9a8f4f5dde6377b45d5235575cccbb0f1c50fc3fdec22e65a2722e1d1f1b",
+            "fusion_bridge.inc": "6794e6800f92f6a933b70abb6b7ccbc493bd368b8ea90b2a4a0cdd690eccb6b2",
+            "graph_bridge.mm": "1ea26ff93b84002bee4a11af2dde24275d483f27daa2d0463170b4975b011fdb"
+          },
+          "library_sha256": "835bfc29a75bb131c39a2c604d95cce062bf8691a2d96d83512a0bd33442a5f2",
+          "compiler": "Apple clang version 21.0.0 (clang-2100.3.20.102)"
+        },
+        "parity": {
+          "shape": [
+            8080,
+            12128,
+            3
+          ],
+          "dtype": "uint16",
+          "max_abs_dn": 1,
+          "rmse_dn": 0.007373869008575436,
+          "changed_sample_fraction": 5.4373944155629285e-05,
+          "channel_mean_signed_dn": [
+            1.8164332924057577e-06,
+            1.887866062331827e-06,
+            1.5307022127014811e-06
+          ],
+          "channel_rmse_dn": [
+            0.006833492677161013,
+            0.007817661863528069,
+            0.007437027180642378
+          ],
+          "dark_below_one_percent_rmse_dn": 0.005964542675607289,
+          "seam_rmse_dn": 0.007123575079665821,
+          "seam_max_abs_dn": 1,
+          "seam_band_output_pixels": 2,
+          "block_native": 384,
+          "gate": {
+            "max_abs_dn_limit": 1,
+            "rmse_dn_limit": 0.02,
+            "dark_rmse_dn_limit": 0.02,
+            "seam_rmse_dn_limit": 0.02,
+            "channel_rmse_dn_limit": 0.02
+          },
+          "passed": true,
+          "metadata_equal": {
+            "Orientation": true,
+            "BlackLevel": true,
+            "WhiteLevel": true,
+            "ColorMatrix1": true,
+            "AsShotNeutral": true,
+            "PhotometricInterpretation": true
+          }
+        },
+        "all_input_frames_used": true,
+        "native_fusion_metrics": {
+          "precision": "float32",
+          "tap_math": "release-compatible MSL 3.1 on macOS 14+ / MSL 3.0 on macOS 13; preserved invariance",
+          "frontend_fast_math": false,
+          "scheduling": "one resident tile, asynchronous stages on one queue",
+          "tiles": 176,
+          "uploaded_bytes": 10031123472,
+          "downloaded_bytes": 3601920000,
+          "peak_allocated_bytes": 1392752228
+        }
+      }
+    },
+    "stage_parity": {
+      "passed": true,
+      "cases": [
+        {
+          "native_shape": [
+            17,
+            19
+          ],
+          "k": 1,
+          "stages": {
+            "phase144": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "legacy": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "feature": {
+              "max_abs": 1.9073486328125e-06,
+              "rmse": 2.6329050717388182e-08,
+              "atol": 2e-05,
+              "passed": true
+            },
+            "controller": {
+              "max_abs": 9.1552734375e-05,
+              "rmse": 1.1538842464897462e-05,
+              "atol": 0.0002,
+              "passed": true
+            },
+            "learned_same_qmap": {
+              "max_abs": 1.52587890625e-05,
+              "rmse": 1.2344239655218312e-06,
+              "atol": 3e-05,
+              "passed": true
+            }
+          },
+          "metrics": {
+            "downloaded_bytes": 31008,
+            "allocated_bytes": 1893380,
+            "chunks": 1,
+            "uploaded_bytes": 213776
+          }
+        },
+        {
+          "native_shape": [
+            24,
+            27
+          ],
+          "k": 14,
+          "stages": {
+            "phase144": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "legacy": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "feature": {
+              "max_abs": 2.86102294921875e-06,
+              "rmse": 6.366888746947775e-08,
+              "atol": 2e-05,
+              "passed": true
+            },
+            "controller": {
+              "max_abs": 5.53131103515625e-05,
+              "rmse": 5.358225402740785e-06,
+              "atol": 0.0002,
+              "passed": true
+            },
+            "learned_same_qmap": {
+              "max_abs": 2.288818359375e-05,
+              "rmse": 1.8112271106955091e-06,
+              "atol": 3e-05,
+              "passed": true
+            }
+          },
+          "metrics": {
+            "downloaded_bytes": 62208,
+            "allocated_bytes": 3981668,
+            "chunks": 4,
+            "uploaded_bytes": 612064
+          }
+        }
+      ]
+    },
+    "runtime_sources_sha256": {
+      "benchmark_metal.py": "1b3b5dfeca36679682de9caedc37dbeaf9c9602652f4dce18348b2f659e7e4ba",
+      "build_app.py": "a911745bce69eb7692c0fe7dafed02947bdd0846d0e482c02e5a0a6460d824bf",
+      "build_metal.py": "acbf91f74ec8c56d374541256cd947d4a0c06826355d59953d5c93f33295e13f",
+      "build_native.py": "d3d73155a3b327c81e7429df7ff613350b87da3e89a81cc53672799de212e413",
+      "check_fusion_roi.py": "376fff5069d74bd7b4a4b4ef449c2acdf8498c6c0f3ae788b7afed32d75af74e",
+      "check_metal_math.py": "c99cfd39ca014f1eab542c70463f9d5ddb59583397e3d8a37e71cf70dbe3377b",
+      "check_native_fusion.py": "3457e7b7f5338899fd27486b88f1172c5aab98e1cda647e0f01ec7c43c036464",
+      "compare_metal_outputs.py": "b220a73ccebe5ff27b38d19c2cb2b2100147386f7f872ccc5458beec3453f74d",
+      "conv_shader.py": "ebd492cadeeeaef1a0c1b9f70f71fef330f4be209c167e134806cf8605bf8f6a",
+      "finish.py": "bca8524f72703cc0ad3bbf0e5ea19bf76864ffd3982e95a1e15604a7984dbf2f",
+      "fold_film.py": "b57fc16cdd40beb2cb658b267b85b0c5cc693927932e6aef80b2a330129d5100",
+      "gui.py": "751a1228c4917f094ba4ccaa4740c045780c19a1fc241852f6931cec1d141c5c",
+      "job_resources.py": "2eb9115959341c336a71e236658e95f573b3297e9182e23cd65c1da709615248",
+      "metal_graph.py": "7b9bae732a9c542bea3d934eb1a2ed47945901addea9d88d88c132e7f95f8bb5",
+      "metal_platform.py": "1f13a4a122c3c2acc5605b01ffedffb764918b21457411a9a9924e94ca7e0c3e",
+      "native_fusion.py": "dea5303907d8af57fd29258018480e248ab846582ffcf11d558fe541a300db2c",
+      "prepare.py": "bdc54d50870935ce2e7f9c1666ccd44261072da5197f4fd5f6c315f058d06878",
+      "prepare_modes.py": "5b2c2247929628254eeb5690d1edb2e77c2c5f06b488320ff06f78096c35f743",
+      "refine_schedule.py": "a12d2d58f80679539f900f1e0f1a981187bdfb0c778ae2cd95323f8ef2e71eef",
+      "run_fast.py": "638deff7fe8fc6eb64e224442a594af7379a036983da31d3f37669c9df35cbb4",
+      "run_stormer.py": "60d952c15888d85daf330f33f864985c11ae0d43e6a6acfc17d4f9be31bd421e",
+      "run_v98.py": "6b3b9b33f3abce2a492662d730e67dd94360503e87f479dee3ce82f05617c6e1",
+      "run_validation.py": "8966885b729568d0ba3ab1cb97f8d6824477ca115add2c7571e701cf55acbdb6",
+      "test_optimizations.py": "1c0c93973d9db1ee4d579f729589047736eb6f3941263430acbf4a053c6b75ab",
+      "validate_outputs.py": "1d5a95c399d197731ee1768a5028eaeadbbb06179400e7a06b8f014de17b615e",
+      "write_acceptance.py": "2a20949e9a323429a690e4bf0b60edf49b3d7266968506808701c5e2f4826839",
+      "write_benchmark.py": "9dfba2b3e78e8b4fbe501358981a04f4c7ebeb63a69165edf6e089238bdd8ce4"
+    },
+    "nonzero_film_gpu_parity": {
+      "passed": true,
+      "cases": [
+        {
+          "shape": [
+            1,
+            6,
+            19,
+            23
+          ],
+          "max_abs": 1.5497207641601562e-06,
+          "rmse": 3.5377189049497746e-07
+        },
+        {
+          "shape": [
+            2,
+            6,
+            24,
+            32
+          ],
+          "max_abs": 1.6689300537109375e-06,
+          "rmse": 3.602458255113557e-07
+        }
+      ]
+    }
+  },
+  "split_module_integration_validation": {
+    "measured_at_utc": "2026-10-04T03:10:47.239701+00:00",
+    "scope": "Combined Apple backend and separately contributed portable helpers; full 14-frame RAW run using an existing mmap directory",
+    "process_wall_seconds": 255.03919129201677,
+    "product_elapsed_seconds": 251.48802590370178,
+    "pure_reconstruction_seconds": 188.56873112500762,
+    "all_input_frames_used": true,
+    "original_wgpu_parity": {
+      "shape": [
+        8080,
+        12128,
+        3
+      ],
+      "dtype": "uint16",
+      "max_abs_dn": 1,
+      "rmse_dn": 0.007373869008575436,
+      "changed_sample_fraction": 5.4373944155629285e-05,
+      "channel_mean_signed_dn": [
+        1.8164332924057577e-06,
+        1.887866062331827e-06,
+        1.5307022127014811e-06
+      ],
+      "channel_rmse_dn": [
+        0.006833492677161013,
+        0.007817661863528069,
+        0.007437027180642378
+      ],
+      "dark_below_one_percent_rmse_dn": 0.005964542675607289,
+      "seam_rmse_dn": 0.007123575079665821,
+      "seam_max_abs_dn": 1,
+      "seam_band_output_pixels": 2,
+      "block_native": 384,
+      "gate": {
+        "max_abs_dn_limit": 1,
+        "rmse_dn_limit": 0.02,
+        "dark_rmse_dn_limit": 0.02,
+        "seam_rmse_dn_limit": 0.02,
+        "channel_rmse_dn_limit": 0.02
+      },
+      "passed": true,
+      "metadata_equal": {
+        "Orientation": true,
+        "BlackLevel": true,
+        "WhiteLevel": true,
+        "ColorMatrix1": true,
+        "AsShotNeutral": true,
+        "PhotometricInterpretation": true
+      }
+    },
+    "previous_optimized_output_parity": {
+      "shape": [
+        8080,
+        12128,
+        3
+      ],
+      "dtype": "uint16",
+      "max_abs_dn": 0,
+      "rmse_dn": 0.0,
+      "changed_sample_fraction": 0.0,
+      "channel_mean_signed_dn": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "channel_rmse_dn": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "dark_below_one_percent_rmse_dn": 0.0,
+      "seam_rmse_dn": 0.0,
+      "seam_max_abs_dn": 0,
+      "seam_band_output_pixels": 2,
+      "block_native": 384,
+      "gate": {
+        "max_abs_dn_limit": 1,
+        "rmse_dn_limit": 0.02,
+        "dark_rmse_dn_limit": 0.02,
+        "seam_rmse_dn_limit": 0.02,
+        "channel_rmse_dn_limit": 0.02
+      },
+      "passed": true,
+      "metadata_equal": {
+        "Orientation": true,
+        "BlackLevel": true,
+        "WhiteLevel": true,
+        "ColorMatrix1": true,
+        "AsShotNeutral": true,
+        "PhotometricInterpretation": true
+      }
+    },
+    "dng_tiff_and_libraw_readback_passed": true,
+    "standalone_backend": {
+      "portable_module_present": false,
+      "mpsgraph_core_inference_passed": true,
+      "v98_configuration_passed": true,
+      "film_folding_default": false,
+      "refinement_halo_native_default": 48,
+      "native_fusion_default": true
+    },
+    "portable_tests": {
+      "passed": 6,
+      "python_versions": [
+        "3.10.16",
+        "3.12.14"
+      ]
+    },
+    "backend_output_tests_passed": 3,
+    "native_fusion_stage_parity": {
+      "passed": true,
+      "cases": [
+        {
+          "native_shape": [
+            17,
+            19
+          ],
+          "k": 1,
+          "stages": {
+            "phase144": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "legacy": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "feature": {
+              "max_abs": 1.9073486328125e-06,
+              "rmse": 2.6329050717388182e-08,
+              "atol": 2e-05,
+              "passed": true
+            },
+            "controller": {
+              "max_abs": 9.1552734375e-05,
+              "rmse": 1.1538842464897462e-05,
+              "atol": 0.0002,
+              "passed": true
+            },
+            "learned_same_qmap": {
+              "max_abs": 1.52587890625e-05,
+              "rmse": 1.2344239655218312e-06,
+              "atol": 3e-05,
+              "passed": true
+            }
+          },
+          "metrics": {
+            "downloaded_bytes": 31008,
+            "allocated_bytes": 1893380,
+            "chunks": 1,
+            "uploaded_bytes": 213776
+          }
+        },
+        {
+          "native_shape": [
+            24,
+            27
+          ],
+          "k": 14,
+          "stages": {
+            "phase144": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "legacy": {
+              "max_abs": 0.0,
+              "rmse": 0.0,
+              "atol": 0,
+              "passed": true
+            },
+            "feature": {
+              "max_abs": 2.86102294921875e-06,
+              "rmse": 6.366888746947775e-08,
+              "atol": 2e-05,
+              "passed": true
+            },
+            "controller": {
+              "max_abs": 5.53131103515625e-05,
+              "rmse": 5.358225402740785e-06,
+              "atol": 0.0002,
+              "passed": true
+            },
+            "learned_same_qmap": {
+              "max_abs": 2.288818359375e-05,
+              "rmse": 1.8112271106955091e-06,
+              "atol": 3e-05,
+              "passed": true
+            }
+          },
+          "metrics": {
+            "downloaded_bytes": 62208,
+            "allocated_bytes": 3981668,
+            "chunks": 4,
+            "uploaded_bytes": 612064
+          }
+        }
+      ]
+    },
+    "runtime_sha256": {
+      "macos/benchmark_metal.py": "1b3b5dfeca36679682de9caedc37dbeaf9c9602652f4dce18348b2f659e7e4ba",
+      "macos/build_app.py": "a911745bce69eb7692c0fe7dafed02947bdd0846d0e482c02e5a0a6460d824bf",
+      "macos/build_metal.py": "acbf91f74ec8c56d374541256cd947d4a0c06826355d59953d5c93f33295e13f",
+      "macos/build_native.py": "d3d73155a3b327c81e7429df7ff613350b87da3e89a81cc53672799de212e413",
+      "macos/check_fusion_roi.py": "376fff5069d74bd7b4a4b4ef449c2acdf8498c6c0f3ae788b7afed32d75af74e",
+      "macos/check_metal_math.py": "c99cfd39ca014f1eab542c70463f9d5ddb59583397e3d8a37e71cf70dbe3377b",
+      "macos/check_native_fusion.py": "3457e7b7f5338899fd27486b88f1172c5aab98e1cda647e0f01ec7c43c036464",
+      "macos/compare_metal_outputs.py": "b220a73ccebe5ff27b38d19c2cb2b2100147386f7f872ccc5458beec3453f74d",
+      "macos/conv_shader.py": "ebd492cadeeeaef1a0c1b9f70f71fef330f4be209c167e134806cf8605bf8f6a",
+      "macos/finish.py": "bca8524f72703cc0ad3bbf0e5ea19bf76864ffd3982e95a1e15604a7984dbf2f",
+      "macos/gui.py": "751a1228c4917f094ba4ccaa4740c045780c19a1fc241852f6931cec1d141c5c",
+      "macos/job_resources.py": "2eb9115959341c336a71e236658e95f573b3297e9182e23cd65c1da709615248",
+      "macos/metal_graph.py": "9bfbcfdb9c3cf9469f39bdea31a7edeb7883004066ea14861d172b35d1f3d7b6",
+      "macos/metal_platform.py": "1f13a4a122c3c2acc5605b01ffedffb764918b21457411a9a9924e94ca7e0c3e",
+      "macos/native_fusion.py": "376d29a4c02333c5af9b1acd9f34da45e89afa8b1ef91879961afbb079c0b205",
+      "macos/optimization_support.py": "f116fe96c694fcebcabdffb1bbe46978eb269aa2c06be051931c19b57cb177f3",
+      "macos/prepare.py": "bdc54d50870935ce2e7f9c1666ccd44261072da5197f4fd5f6c315f058d06878",
+      "macos/prepare_modes.py": "5b2c2247929628254eeb5690d1edb2e77c2c5f06b488320ff06f78096c35f743",
+      "macos/refine_schedule.py": "c05c4af537cf1ec712802f97d21a77272b38b5283f72cdce43485dd245b80e6f",
+      "macos/run_fast.py": "638deff7fe8fc6eb64e224442a594af7379a036983da31d3f37669c9df35cbb4",
+      "macos/run_stormer.py": "60d952c15888d85daf330f33f864985c11ae0d43e6a6acfc17d4f9be31bd421e",
+      "macos/run_v98.py": "d66dfc8523ca2ea875c2299fb3008aca632149715f2cfb42592e3bed7107df95",
+      "macos/run_validation.py": "8966885b729568d0ba3ab1cb97f8d6824477ca115add2c7571e701cf55acbdb6",
+      "macos/test_optimizations.py": "483d669f02227fad39ee052f60bcc48346a52c8bbd9b8d2905a97c1812eebeb5",
+      "macos/validate_outputs.py": "1d5a95c399d197731ee1768a5028eaeadbbb06179400e7a06b8f014de17b615e",
+      "macos/write_acceptance.py": "2a20949e9a323429a690e4bf0b60edf49b3d7266968506808701c5e2f4826839",
+      "macos/write_benchmark.py": "9dfba2b3e78e8b4fbe501358981a04f4c7ebeb63a69165edf6e089238bdd8ce4",
+      "Core-Only-Source-Code/reconstruction_optimizations.py": "1bed368e957ac7c4920a68eb8ecbf226b66ed38afe7bc08253c8bda3091c0800"
+    }
+  }
+}

@@ -284,9 +284,29 @@ JSR（Jiangtherapee Super Resolution）的 Windows x64 EXE 通过 [Releases](htt
 
 The Windows x64 EXE for JSR (Jiangtherapee Super Resolution) is distributed through [Releases](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases). Download the application from the release's Assets section. Runtime requirements and accompanying files are described in the release notes.
 
-本仓库用于二进制程序及配套论文的发布，不包含算法源代码或源码历史。
+本仓库发布二进制程序、配套论文材料，以及 `Core-Only-Source-Code` 中的 Controller、RefineNet、局部归一化源码与权重。`Third-Party-Licenses/LibRaw` 提供 LibRaw 对应源码清单和 Nikon HE 解码器补丁。完整应用的其他 Python 模块随 Windows 包以字节码发布。仓库提供可选的 [macOS 三模式运行入口](macos/README.md)，提取原版处理模块，使用 arm64 Python 与 Metal 执行 RAW 连拍重建。
 
-Binary releases are published here, and the paper will also be provided. This repository does not contain the algorithm's source code or source history.
+This repository publishes binary releases, paper materials, the Controller, RefineNet, local normalization code and weights in `Core-Only-Source-Code`, and corresponding LibRaw source information with the Nikon HE decoder patch in `Third-Party-Licenses/LibRaw`. The remaining Python application modules are distributed as bytecode in the Windows release.
+
+### Apple Silicon macOS：运行已公开的计算核心
+
+使用原生 arm64 Python 3.12 和 WGPU 的 Metal 后端。在仓库根目录执行：
+
+```sh
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python -r Core-Only-Source-Code/requirements.txt
+.venv/bin/python Core-Only-Source-Code/check_macos.py
+```
+
+验证入口默认加载四帧权重，`--frames 14` 可验证十四帧权重。脚本强制选择 Metal，检查权重校验和、GPU 卷积与 NumPy 的数值一致性、两种局部归一化入口的一致性，以及 Controller 和 RefineNet 的输出形状和有限值。成功时输出 JSON，包含 GPU 型号、后端及首次前向耗时。
+
+[完整 macOS 环境](macos/README.md)提供 MPSGraph FP32 Controller / RefineNet 和三模式 RAW 入口。准备该环境后，可执行 `macos/.venv/bin/python Core-Only-Source-Code/check_macos.py --frames 14 --network-backend mpsgraph` 验证原生图后端；完整照片性能与原版输出精度见 [Apple Silicon 基准](macos/BENCHMARK.json)。
+
+2026-10-03 在 Apple M2 Pro、macOS 27.2、arm64 Python 3.12.14 上验证：四帧与十四帧权重均通过上述检查，GPU 卷积最大绝对误差为 `1.9073486328125e-06`。
+
+这里的测试输入为合成张量，Controller 与 RefineNet 分别执行。[macOS 三模式入口](macos/README.md)复用 Windows 包中的完整处理流程。日志中的小尺寸首次前向耗时用于运行验证，包含驱动的首次编译开销；整张照片的处理速度需用真实连拍另行测量。
+
+The published core runs with native arm64 Python 3.12 and WGPU's Metal backend. The commands above verify synthetic core inference. This repository also includes an optional [native macOS three-mode launcher](macos/README.md) that executes the original processing modules extracted from the Windows release.
 
 <a name="paper"></a>
 

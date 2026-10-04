@@ -1,0 +1,8 @@
+.venv/
+.DS_Store
+__pycache__/
+*.py[cod]
+macos/vendor/
+macos/validation/
+macos/ACCEPTANCE.json
+macos/JSR Metal.app/

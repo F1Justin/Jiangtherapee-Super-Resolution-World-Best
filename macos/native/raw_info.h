@@ -1,0 +1,39 @@
+#pragma once
+#include <cstdint>
+struct RawInfoV1 {
+  uint32_t abi_version;
+  uint32_t struct_size;
+  uint32_t raw_width;
+  uint32_t raw_height;
+  uint32_t width;
+  uint32_t height;
+  uint32_t top_margin;
+  uint32_t left_margin;
+  uint32_t flip;
+  uint32_t filters;
+  uint32_t colors;
+  uint32_t maximum;
+  uint32_t data_maximum;
+  uint32_t raw_bps;
+  uint32_t black_common;
+  uint32_t repeat_rows;
+  uint32_t repeat_cols;
+  uint32_t repeat_count;
+  uint32_t repeat_origin_y;
+  uint32_t repeat_origin_x;
+  int32_t site_color_indices[4];
+  float cblack[4];
+  float black_site_base[4];
+  float black_site[4];
+  float cam_mul[4];
+  float pre_mul[4];
+  float cam_xyz[12];
+  float cmatrix[12];
+  float rgb_cam[12];
+  char cfa_pattern[5];
+  char camera_make[64];
+  char camera_model[64];
+  char unique_camera_model[64];
+  char libraw_version[32];
+  char build_id[64];
+};
