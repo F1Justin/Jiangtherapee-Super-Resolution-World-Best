@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-VERSION = '2.3.9-macos-preview.1'
+VERSION = '2.3.9-macos-preview.2'
 
 
 def entry(name):
@@ -20,12 +20,23 @@ def entry(name):
 def main():
     parser = argparse.ArgumentParser(description='Jiangtherapee Bridge · Apple Silicon portable CLI')
     parser.add_argument('--version', action='version', version=VERSION)
-    parser.add_argument('command', nargs='?', choices=('gui', 'fast', 'stormer', 'v98', 'doctor'))
+    parser.add_argument('command', nargs='?', choices=('gui', 'fast', 'stormer', 'v98', 'doctor', 'web-worker', 'gui-tk'))
     args = parser.parse_args(sys.argv[1:2])
     remaining = sys.argv[2:]
     if args.command is None:
         parser.print_help()
         return
+    if args.command == 'web-worker':
+        runpy.run_path(str(entry('web_bridge')), run_name='__main__')
+        return
+    if args.command == 'gui':
+        host = ROOT.parent.parent / 'MacOS/JSRWeb'
+        if host.exists():
+            os.execv(str(host), [str(host), *remaining])
+        development = ROOT / 'dist/web-dev/JSRWeb'
+        if development.exists():
+            os.execv(str(development), [str(development), '--resources', str(ROOT / 'dist/web-dev'), '--engine-root', str(ROOT), *remaining])
+        raise SystemExit('Build the WKWebView host with build_portable.py')
     if args.command == 'doctor':
         doctor = argparse.ArgumentParser(description='Check the bundled runtime and GPU')
         doctor.add_argument('--raw', type=Path)
@@ -48,18 +59,10 @@ def main():
                 result['raw'] = {'shape': list(raw.raw_image_visible.shape), 'white_level': raw.white_level,
                                  'black_levels': raw.black_level_per_channel}
         if options.gui_test:
-            from gui import Application
-            window = tkinter.Tk()
-            try:
-                application = Application(window)
-                window.update()
-                result['gui'] = {'window_created': bool(window.winfo_viewable()),
-                                 'title': window.title(), 'default_mode': application.mode.get(),
-                                 'size': [window.winfo_width(), window.winfo_height()]}
-                if not result['gui']['window_created']:
-                    raise RuntimeError('GUI window did not become visible')
-            finally:
-                window.destroy()
+            host = ROOT.parent.parent / 'MacOS/JSRWeb'
+            result['gui'] = json.loads(subprocess.check_output([str(host), '--structure-test'], text=True))
+            if result['gui']['modes'] != 3 or not result['gui']['ui'] or result['gui']['errors']:
+                raise RuntimeError('WKWebView GUI validation failed')
         print(json.dumps(result, ensure_ascii=False, indent=2), flush=True)
         if options.self_test:
             check = ROOT.parent / 'Core-Only-Source-Code/check_macos.pyc'
@@ -73,7 +76,7 @@ def main():
                 subprocess.run([sys.executable, str(entry('check_native_fusion')), '--output', str(report)], check=True)
                 print(report.read_text(), flush=True)
         return
-    name = 'gui' if args.command == 'gui' else 'run_' + args.command
+    name = 'gui' if args.command == 'gui-tk' else 'run_' + args.command
     if args.command == 'v98':
         name = 'run_v98'
     path = entry(name)

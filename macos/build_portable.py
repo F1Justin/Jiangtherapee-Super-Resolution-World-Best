@@ -11,8 +11,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-VERSION = '2.3.9-macos-preview.1'
-MODULES = ('portable_cli', 'gui', 'run_fast', 'run_stormer', 'run_v98', 'finish',
+VERSION = '2.3.9-macos-preview.2'
+MODULES = ('portable_cli', 'web_bridge', 'gui', 'run_fast', 'run_stormer', 'run_v98', 'finish',
            'job_resources', 'metal_graph', 'metal_platform', 'native_fusion',
            'optimization_support', 'refine_schedule', 'check_native_fusion')
 MACH_MAGIC = (b'\xcf\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca')
@@ -175,6 +175,10 @@ def main():
         shutil.copy2(ROOT.parent / 'Third-Party-Licenses/LibRaw/libraw-0.22.2-nikon-he.patch', licenses / 'LibRaw-source/Nikon-HE.patch')
         print('Building embedded native Metal bridge', flush=True)
         print(run([sys.executable, ROOT / 'build_metal.py', '--embed-fusion', '--output', vendor / 'metal/jsr_graph.dylib']), flush=True)
+    from build_web_ui import build as build_web_ui
+    build_web_ui(resources / 'web')
+    for name in ('portable_cli', 'web_bridge'):
+        compile_module(ROOT / (name + '.py'), engine / (name + '.pyc'), 'engine/' + name + '.py')
     print('Relocating and signing Mach-O dependencies', flush=True)
     dependencies = relocate(resources, [(base, runtime), (site, bundled_site), (ROOT / 'vendor', vendor)])
     native_record = vendor / 'metal/jsr_graph.build.json'
@@ -188,6 +192,9 @@ def main():
     run(['xcrun', 'clang', '-arch', 'arm64', '-O2', '-mmacosx-version-min=14.0',
          ROOT / 'native/portable_launcher.c', '-o', launcher])
     run(['codesign', '--force', '--sign', '-', launcher])
+    host = macos / 'JSRWeb'
+    run(['xcrun', 'swiftc', '-O', '-target', 'arm64-apple-macos14.0', '-framework', 'AppKit', '-framework', 'WebKit', ROOT / 'native/web_gui.swift', '-o', host])
+    run(['codesign', '--force', '--sign', '-', host])
     finder = macos / 'JSR'
     finder.unlink(missing_ok=True)
     shutil.copy2(launcher, finder)
@@ -196,7 +203,7 @@ def main():
     (contents / 'Info.plist').write_bytes(plistlib.dumps({
         'CFBundleIdentifier':'com.f1justin.jsrbridge.preview', 'CFBundleName':'JSR Bridge',
         'CFBundleDisplayName':'JSR Bridge', 'CFBundleExecutable':'JSR', 'CFBundlePackageType':'APPL',
-        'CFBundleVersion':'1', 'CFBundleShortVersionString':'2.3.9',
+        'CFBundleVersion':'2', 'CFBundleShortVersionString':'2.3.9',
         'NSHighResolutionCapable':True,'LSMinimumSystemVersion':'14.0'}))
     wrapper = output / 'jsr'
     wrapper.write_text('''#!/bin/zsh
@@ -211,7 +218,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 exec "$here/jsr" gui
 ''')
     (output / '启动 GUI.command').chmod(0o755)
-    (output / '使用说明.txt').write_text('''Jiangtherapee Bridge 2.3.9 · macOS arm64 portable preview 1
+    (output / '使用说明.txt').write_text('''Jiangtherapee Bridge 2.3.9 · macOS arm64 portable preview 2
 
 要求：Apple Silicon，macOS 14 或更高版本。已在 M2 Pro / macOS 27.2 验证。
 解压并保持整个目录完整，双击 JSR Bridge.app 或 启动 GUI.command。
@@ -229,7 +236,10 @@ v9.8 全图示例：
 ./jsr v98 --raw-frame /路径/01.nef [继续重复 --raw-frame，合计14张] --output-dir /输出/新目录 --cache-mode memmap --prepare-mmap-cache --resource-mode balanced --camera-profile-source libraw --out-dng on --out-tiff on --out-png off
 
 Fast 使用14张；Stormer使用7张；v9.8使用14张。
-Fast/Stormer需匹配暗场或手动标定，GUI里的0 DN/20000电子是测试参数。
+GUI使用作者原版 HTML 控制面板，由系统 WKWebView 承载。
+Fast/Stormer需匹配暗场或手动标定。0 DN/20000电子仅供测试，实际拍摄使用实测标定。
+v9.8使用现有自动处理路径；其线性DNG当前为无压缩编码。
+输出路径下每次创建独立任务目录，保留processing.log和缓存。
 输出、配准缓存和处理日志保存在所选输出目录。保留足够的磁盘空间。
 移动整个 portable 目录后，GUI和CLI仍使用同包依赖。
 

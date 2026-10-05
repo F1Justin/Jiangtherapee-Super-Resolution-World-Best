@@ -15,9 +15,13 @@
 
 本地预览包采用 ad-hoc 签名，Apple 公证尚未完成。第三方许可和 LibRaw 源码/补丁保存在包内。构建入口为 `macos/.venv/bin/python macos/build_portable.py`，产物写入忽略目录 `macos/dist`。打包后的运行过程使用同包依赖。私有运行产物与源码发布范围保持本地，公开 Release 由作者确认。
 
-双击 `JSR Metal.app` 或 `JSR Metal.command`，选择模式、同组 RAW 连拍和输出目录。Stormer 使用 7 张，两个 K14 模式使用 14 张。每次处理创建独立时间戳目录，并保存日志、DNG 与 16-bit TIFF。
+新版 GUI 复用官方 Windows 2.3.9 包内的 HTML、CSS 与 JavaScript，由系统 WKWebView 承载。原版三模式选择、RAW 文件列表与预览、Stormer 框选、参数、PTC / 色彩配置搜索、输出选项、日志、进度、停止与打开结果接入本机后端。作者支持入口与 QQ 群信息保留。JSR 页面独立运行。
 
-Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口自动换算为归一化单位。黑电平从照片读取；满阱默认 20000 e⁻ 是测试参数，可填写实测值。v9.8 沿用原版处理流程。三个模式保留照片旋转标记。v9.8 的“计算方式”选择器提供 Apple 优化和原版 WGPU 两个 FP32 后端。
+Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口换算为归一化单位。手动参数由用户填写；0 DN / 20000 e⁻ 是验收测试参数。v9.8 沿用已验证的自动处理路径，采用 MPSGraph / Metal；其线性 DNG 当前为无压缩编码。三个模式保留照片旋转标记。预览按传感器原始方向显示，Stormer 以同一参考帧的坐标执行局部处理。
+
+每次运行在所选输出目录创建独立任务目录，并保存 `processing.log`。停止操作结束计算进程组，已有输出保留在任务目录。应用退出时结束后台计算。GUI 通过应用内消息与本地 JSON 行协议通信。
+
+原版网页资源位于忽略目录 `vendor/original-ui`，由 `extract_original_ui.py` 校验官方 ZIP 后提取。`build_web_ui.py` 对 v9.8 校准路径、DNG 说明与停止文案执行版本锁定的适配。原始资产与模型仅进入本地 portable 产物。
 
 ## 真实 RAW 测试
 
@@ -76,11 +80,11 @@ M2 Pro 上，864 × 864 RArm 单次推理从 7.309 秒降到 0.860 秒，提速 
 
 平台桥接、原生图执行器、分块调度、导出资源管理与验证工具作为独立模块提交。作者在应用源码中接入这些接口后，可直接构建 macOS 后端。当前 ZIP 提取入口验证已发布版本，字节码调度常量有严格契约检查。原版产品报告中的 WGPU 路由字段保留为发布包契约；`macos_port` 记录实际 Controller、RArm 和融合执行器。
 
-本机照片、完整报告及包含本机路径的 `ACCEPTANCE.json` 由 Git 忽略；公开 `BENCHMARK.json` 保存脱敏性能和精度结果。当前 `.app` 是指向本工作副本环境的启动器。独立应用发布需要打包运行环境、签名及 macOS arm64 CI。
+本机照片、完整报告及包含本机路径的 `ACCEPTANCE.json` 由 Git 忽略；公开 `BENCHMARK.json` 保存脱敏性能和精度结果。独立 portable 应用包含运行环境，并采用 ad-hoc 签名。公开应用发布还需 Apple 公证与 macOS arm64 CI。
 
 ## 重新准备
 
-先安装 Xcode Command Line Tools 或 Xcode，以及 Homebrew 的 `cmake`、`ninja`、`jpeg-turbo`、`little-cms2` 和 `exiftool`，然后在仓库根目录执行：
+先安装 Xcode Command Line Tools 或 Xcode，以及 Homebrew 的 `brotli`、`cmake`、`ninja`、`jpeg-turbo`、`little-cms2` 和 `exiftool`，然后在仓库根目录执行：
 
 ```sh
 uv python install 3.10
@@ -90,7 +94,8 @@ macos/.venv/bin/python macos/prepare.py /absolute/path/Jiangtherapee-Bridge-2.3.
 macos/.venv/bin/python macos/prepare_modes.py /absolute/path/Jiangtherapee-Bridge-2.3.9-Windows-x64.zip
 macos/.venv/bin/python macos/build_native.py
 macos/.venv/bin/python macos/build_metal.py
-macos/.venv/bin/python macos/build_app.py
+macos/.venv/bin/python macos/extract_original_ui.py
+macos/.venv/bin/python macos/build_portable.py
 ```
 
 PyPI 安装可指定 `--index-url https://pypi.tuna.tsinghua.edu.cn/simple`。字节码使用 Python 3.10，WGPU 使用 0.31.0。`Core-Only-Source-Code` 的 Python 3.12 验证环境独立保留。
