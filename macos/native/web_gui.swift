@@ -15,7 +15,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         if let i = arguments.firstIndex(of: "--resources"), arguments.count > i + 1 { return URL(fileURLWithPath: arguments[i + 1]) }
         return Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
     }
-    var testing: Bool { arguments.contains("--self-test") || arguments.contains("--structure-test") }
+    var testing: Bool { arguments.contains("--self-test") || arguments.contains("--structure-test") || arguments.contains("--batch-test") }
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         let menu = NSMenu()
@@ -78,7 +78,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         guard message.frameInfo.isMainFrame, message.frameInfo.request.url?.isFileURL == true,
               let body = message.body as? [String: Any], let route = body["route"] as? String else { replyHandler(nil, "请求来源无效"); return }
         var payload = body["payload"] as? [String: Any] ?? [:]
-        if route == "author" {
+        if route == "author" || route == "author/support" {
             web.evaluateJavaScript("document.querySelector('#author-support').showModal()")
             replyHandler([:], nil); return
         }
@@ -99,6 +99,20 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
                 } else { payload["paths"] = panel.urls.map { $0.path } }
             }
         }
+        if route == "jsr/batch-scan" && payload["folder"] == nil {
+            if testing, let i = arguments.firstIndex(of: "--fixtures"), arguments.count > i + 1 {
+                payload["folder"] = arguments[i + 1]
+            } else {
+                let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
+                panel.title = "选择 Z8 连拍目录"
+                guard panel.runModal() == .OK else { replyHandler(NSNull(), nil); return }
+                payload["folder"] = panel.url!.path
+            }
+        }
+        if route == "jsr/batch-reveal" {
+            if let path = payload["output"] as? String { NSWorkspace.shared.open(URL(fileURLWithPath: path)) }
+            replyHandler([:], nil); return
+        }
         if route == "pick" || route == "jsr/dark" {
             let panel = NSOpenPanel(); panel.canChooseDirectories = route == "pick"; panel.canChooseFiles = route == "jsr/dark"; panel.allowsMultipleSelection = false
             replyHandler(["path": panel.runModal() == .OK ? panel.url!.path : ""], nil); return
@@ -107,7 +121,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
             if let path = outputFolder { NSWorkspace.shared.open(URL(fileURLWithPath: path)) }
             replyHandler([:], nil); return
         }
-        let allowed = ["jsr/select", "jsr/options", "jsr/start", "jsr/status", "jsr/cancel"]
+        let allowed = ["jsr/select", "jsr/options", "jsr/start", "jsr/status", "jsr/cancel", "jsr/camera-preset", "jsr/batch-scan", "jsr/batch-clear-selections", "jsr/batch-validate", "jsr/batch-thumbs", "jsr/batch-report"]
         guard allowed.contains(route) else { replyHandler(nil, "未知请求"); return }
         forward(route, payload) { result, error in
             if route == "jsr/start", let value = result as? [String: Any] { self.outputFolder = value["output"] as? String }
@@ -118,7 +132,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         guard testing else { return }
         Task { @MainActor in
             do {
-                let body = self.arguments.contains("--structure-test") ? "return {host:'WKWebView',modes:document.querySelectorAll('[data-engine]').length,ui:!!document.querySelector('#jsr-start'),author:!!document.querySelector('#author-support img'),errors:document.querySelector('#mac-error').textContent};" : "return await window.macSelfTest(runJob);"
+                let body = self.arguments.contains("--structure-test") ? "return {host:'WKWebView',modes:document.querySelectorAll('[data-engine]').length,ui:!!document.querySelector('#jsr-start'),author:!!document.querySelector('#author-support img'),errors:document.querySelector('#mac-error').textContent};" : self.arguments.contains("--batch-test") ? "return await window.macBatchSelfTest();" : "return await window.macSelfTest(runJob);"
                 let value = try await webView.callAsyncJavaScript(body, arguments: ["runJob": self.arguments.contains("--job-test")], in: nil, contentWorld: .page)
                 let data = try JSONSerialization.data(withJSONObject: value!, options: [.sortedKeys])
                 print(String(data: data, encoding: .utf8)!)

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.util
 import json
 import marshal
@@ -15,10 +14,10 @@ import zipfile
 from PyInstaller.archive.readers import CArchiveReader, ZlibArchiveReader
 
 
-ARCHIVE_SHA256 = "66367390fd0efdc46002411b9117685716258d3bed0571ac74ecbe83d2c31c06"
-BACKEND_SHA256 = "6a43c5d2955067e91693dfa27c87531275ee9a8e91a5b7f8381c8dc85bb0e623"
+from release import ARCHIVE_SHA256, PREFIX, TAG, UPSTREAM_VERSION, extract_shared, sha256
+BACKEND_SHA256 = "a4778dc549b8f7e84145930ae13a115bd1cc31b14f549484b344a01e8a46d4b1"
 MODULES = {
-    "diagnostic_entry", "fast_align", "fast_calibration", "fast_frontend_run", "fast_ptc",
+    "raw_metadata", "diagnostic_entry", "fast_align", "fast_calibration", "fast_frontend_run", "fast_ptc",
     "fast_signal", "fastk14_app", "frontend", "frontend_reliable", "frontend_steered",
     "native_dng", "network_reliable", "registration_candidate", "registration_linear_support",
     "resident_k14", "resource_plan", "source_atlas", "stable_gather", "support_bounds",
@@ -32,14 +31,6 @@ RESOURCES = {
 }
 
 
-def sha256(path: Path) -> str:
-    result = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            result.update(chunk)
-    return result.hexdigest()
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path)
@@ -47,13 +38,14 @@ def main() -> None:
     if sys.version_info[:2] != (3, 10):
         parser.error("Python 3.10 is required by the original bytecode")
     if sha256(args.archive) != ARCHIVE_SHA256:
-        parser.error("Archive SHA-256 differs from the official Bridge 2.3.9 release")
+        parser.error("Archive SHA-256 differs from the official Bridge 2.3.27 release")
+    extract_shared(args.archive)
     root = Path(__file__).resolve().parent
     vendor = root / "vendor"
     output = vendor / "fast"
     output.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.archive) as archive:
-        prefix = "Jiangtherapee-Bridge-2.3.9-Windows-x64/resources/"
+        prefix = PREFIX + "resources/"
         backend = vendor / "jsr_fast_k14_backend.exe"
         backend.write_bytes(archive.read(prefix + "jsr_fast_k14_backend.exe"))
         if sha256(backend) != BACKEND_SHA256:
@@ -75,7 +67,7 @@ def main() -> None:
             path.write_bytes(archive.read(prefix + "_internal/" + original))
     shutil.copyfile(root / "conv_shader.py", output / "conv_shader.py")
     manifest = {
-        "release": "jb-v2.3.9",
+        "release": TAG,
         "archive_sha256": ARCHIVE_SHA256,
         "backend_sha256": BACKEND_SHA256,
         "python_bytecode": "3.10",

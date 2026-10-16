@@ -1,4 +1,4 @@
-"""Extract original Stormer and v9.8 modules and model resources from Bridge 2.3.9."""
+"""Extract original Stormer and v9.8 modules and model resources from Bridge 2.3.27."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -10,10 +10,10 @@ import sys
 import zipfile
 
 from PyInstaller.archive.readers import CArchiveReader, ZlibArchiveReader
-from prepare import ARCHIVE_SHA256, sha256
+from release import ARCHIVE_SHA256, PREFIX, TAG, sha256
 
 MODULES = {
-    'stormer': ('jsr_backend', set('''backend bridge_preview color_profile developer dng_repack native_dng
+    'stormer': ('jsr_backend', set('''batch_bridge backend bridge_preview color_profile developer dng_repack native_dng
         output_chain profile_metadata ptc selftest sensor srhq_joraw2 v124_dng v82_lca
         v82_lossless_dng whitepoint'''.split())),
     'v98': ('jsr_v98_k14_backend', set('''_srhq_kernels alias_v6 batch_raw_probe block_align bsr_steer
@@ -43,7 +43,7 @@ def main():
         parser.error('Bridge archive checksum mismatch')
     base = Path(__file__).resolve().parent / 'vendor'
     base.mkdir(exist_ok=True)
-    prefix = 'Jiangtherapee-Bridge-2.3.9-Windows-x64/resources/'
+    prefix = PREFIX + 'resources/'
     with zipfile.ZipFile(args.archive) as release:
         for mode, (exe, names) in MODULES.items():
             output = base / mode
@@ -76,7 +76,7 @@ def main():
             else:
                 (output / 'newpipe_homog.py').write_text(CACHE_LAUNCHER)
             manifest = {
-                'release': 'jb-v2.3.9', 'archive_sha256': ARCHIVE_SHA256,
+                'release': TAG, 'archive_sha256': ARCHIVE_SHA256,
                 'mode': mode, 'backend_sha256': sha256(binary),
                 'files': {str(p.relative_to(output)): sha256(p) for p in sorted(output.rglob('*'))
                           if p.is_file() and p.name != 'manifest.json' and '__pycache__' not in p.parts},

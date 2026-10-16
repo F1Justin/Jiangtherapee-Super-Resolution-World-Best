@@ -19,10 +19,15 @@ def main():
     cv2.setNumThreads(4)
     from finish import snapshot_images
     initial_images = snapshot_images(Path(sys.argv[sys.argv.index('--output-dir') + 1])) if '--output-dir' in sys.argv else {}
-    runpy.run_path(str(root / 'backend_entry.pyc'), run_name='__main__')
+    try:
+        runpy.run_path(str(root / 'backend_entry.pyc'), run_name='__main__')
+    except SystemExit as exit_status:
+        if exit_status.code not in (None, 0):
+            raise
     if '--output-dir' in sys.argv and '--raw-frame' in sys.argv:
-        from finish import preserve_orientation
-        preserve_orientation(Path(sys.argv[sys.argv.index('--output-dir') + 1]), Path(sys.argv[sys.argv.index('--raw-frame') + 1]), initial_images)
+        from output_metadata import finalize
+        frames = [sys.argv[i + 1] for i, arg in enumerate(sys.argv) if arg == '--raw-frame']
+        finalize(Path(sys.argv[sys.argv.index('--output-dir') + 1]), frames, 'stormer', initial_images)
 
 
 if __name__ == '__main__':

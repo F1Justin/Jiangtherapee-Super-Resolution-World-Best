@@ -1,6 +1,6 @@
 # Jiangtherapee Bridge — Apple Silicon / Metal
 
-三个后端均从官方 Bridge 2.3.9 Windows 包提取原始 Python 3.10 字节码与模型权重，使用本机 arm64 Python、OpenCV 和 Metal 执行。v9.8 默认采用原生 MPSGraph FP32 Controller / GreenFiLM RArm；融合默认采用原生 Metal FP32 前段，特征和 qmap 保留在 GPU。Fast 和 Stormer 使用原版 WGPU Metal。Nikon Z6 III High Efficiency* NEF 使用仓库提供的 Nikon HE 补丁重新编译 LibRaw 0.22.2，并接入本机 RAW 桥接库。
+三个后端均从官方 Bridge 2.3.27 Windows 包提取原始 Python 3.10 字节码与模型权重，使用本机 arm64 Python、OpenCV 和 Metal 执行。v9.8 默认采用原生 MPSGraph FP32 Controller / GreenFiLM RArm；融合默认采用原生 Metal FP32 前段，特征和 qmap 保留在 GPU。Fast 和 Stormer 使用原版 WGPU Metal。Nikon Z6 III High Efficiency* NEF 使用仓库提供的 Nikon HE 补丁重新编译 LibRaw 0.22.2，并接入本机 RAW 桥接库。
 
 ## 启动
 
@@ -13,17 +13,28 @@
 ./jsr v98 --help
 ```
 
-本地预览包采用 ad-hoc 签名，Apple 公证尚未完成。第三方许可和 LibRaw 源码/补丁保存在包内。构建入口为 `macos/.venv/bin/python macos/build_portable.py`，产物写入忽略目录 `macos/dist`。打包后的运行过程使用同包依赖。私有运行产物与源码发布范围保持本地，公开 Release 由作者确认。
+本地预览包采用 ad-hoc 签名，Apple 公证尚未完成。第三方许可和 LibRaw 源码/补丁保存在包内。构建入口为 `macos/.venv/bin/python macos/build_portable.py`，产物写入忽略目录 `macos/dist`。打包后的运行过程使用同包依赖。此 fork 独立维护 macOS 移植，版本号同时标识官方基线与 macOS 修订号。
 
-新版 GUI 复用官方 Windows 2.3.9 包内的 HTML、CSS 与 JavaScript，由系统 WKWebView 承载。原版三模式选择、RAW 文件列表与预览、Stormer 框选、参数、PTC / 色彩配置搜索、输出选项、日志、进度、停止与打开结果接入本机后端。作者支持入口与 QQ 群信息保留。JSR 页面独立运行。
+新版 GUI 复用官方 Windows 2.3.27 包内的 HTML、CSS 与 JavaScript，由系统 WKWebView 承载。原版三模式选择、RAW 文件列表与预览、Stormer 框选、参数、PTC / 色彩配置搜索、输出选项、日志、进度、停止与打开结果接入本机后端。作者支持入口与 QQ 群信息保留。JSR 页面独立运行。
 
-Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口换算为归一化单位。手动参数由用户填写；0 DN / 20000 e⁻ 是验收测试参数。v9.8 沿用已验证的自动处理路径，采用 MPSGraph / Metal；其线性 DNG 当前为无压缩编码。三个模式保留照片旋转标记。预览按传感器原始方向显示，Stormer 以同一参考帧的坐标执行局部处理。
+Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口换算为归一化单位。手动参数由用户填写；0 DN / 20000 e⁻ 是验收测试参数。v9.8 沿用已验证的自动处理路径，采用 MPSGraph / Metal；其线性 DNG 在重建后使用官方原生无损 JPEG 分块压缩。三个模式保留照片旋转标记。预览按传感器原始方向显示，Stormer 以同一参考帧的坐标执行局部处理。
 
 每次运行在所选输出目录创建独立任务目录，并保存 `processing.log`。停止操作结束计算进程组，已有输出保留在任务目录。应用退出时结束后台计算。GUI 通过应用内消息与本地 JSON 行协议通信。
 
 原版网页资源位于忽略目录 `vendor/original-ui`，由 `extract_original_ui.py` 校验官方 ZIP 后提取。`build_web_ui.py` 对 v9.8 校准路径、DNG 说明与停止文案执行版本锁定的适配。原始资产与模型仅进入本地 portable 产物。
 
-## 真实 RAW 测试
+## 2.3.27 macOS 更新
+
+当前构建版本为 `2.3.27-macos.1`。三套原始后端与模型从校验过的官方包提取，保留 Apple Silicon 原生融合与 MPSGraph 加速。Nikon HE 解码器升级为官方 2026-10-07 修复源码；Stormer 黑场归一化、高光保护和新版输出链路随原始后端更新。
+
+- 三模式 DNG 使用原生无损压缩；按实际参考帧写入 EXIF、镜头与 Nikon 私有数据，并保留重建像素和色彩校准。
+- 新版原始 JSR 界面包含 Z8 相机预设、102 份黑场，以及 Z8 连拍目录分组、审阅、顺序重建、批次报告和取消。
+- 每组保存独立选择、标定和输出目录。ISO 未列入 PTC 表时在相邻满阱值之间插值；回退选择记录于 `CAMERA_PRESET.json`。
+- Mac 应用聚焦三模式 JSR 工作流；Windows Bridge 的照片库和独立 DeepSeek 助手不在本移植的功能范围内。
+
+验收摘要见 [2.3.27 验收记录](RELEASE-2.3.27.md)，完整本机记录保存在 `validation/release-2.3.27/`。Z6 III 实拍覆盖 Fast 全图、Stormer 双输出选区及 v9.8 全图。Z8 预设与批量使用合成测试组验证协议与标定隔离，尚无 Z8 真实亮场的成像验收。原生 DNG 重打包自带像素读回核验。新旧版性能受运行环境与分块影响，下方历史速度不代表此次更新提速。
+
+## 历史真实 RAW 测试（2.3.9）
 
 2026-10-03，Apple M2 Pro、32 GB 内存、macOS 27.2、arm64 Python 3.10.16、Metal。输入为用户提供的 14 张 Nikon Z6 III NEF，6064 × 4040，ISO 2000，1/750 秒，High Efficiency*。
 
@@ -40,7 +51,7 @@ Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 D
 
 Fast 与 Stormer 的 DNG 解码像素和相应 TIFF 完全一致。测试参数为黑电平 1008 DN、读噪声 0、满阱 20000 e⁻；用户已授权使用测试参数。Stormer 全图耗时尚待实测，界面提供完整原版全图路径。
 
-v9.8 原版 WGPU 的纯重建耗时 1864.8 秒，其中 GreenFiLM RArm 精修为 1594.4 秒。原版 900 秒重建速度门槛记录为 `FAIL`，功能运行状态为 `COMPLETE`。DNG 经 TIFF 解码器和 LibRaw RGB 后处理读回，尺寸、16-bit 数据及旋转标记验证通过。彩色 TIFF 与相机线性 DNG 分属不同色彩空间。当前 v9.8 DNG 为无压缩无损文件，约 588 MB。
+v9.8 原版 WGPU 的纯重建耗时 1864.8 秒，其中 GreenFiLM RArm 精修为 1594.4 秒。原版 900 秒重建速度门槛记录为 `FAIL`，功能运行状态为 `COMPLETE`。DNG 经 TIFF 解码器和 LibRaw RGB 后处理读回，尺寸、16-bit 数据及旋转标记验证通过。彩色 TIFF 与相机线性 DNG 分属不同色彩空间。2.3.9 测试中的 v9.8 DNG 为无压缩无损文件，约 588 MB；2.3.27 默认使用无损 JPEG 压缩。
 
 Apple FP32 的相同缓存全图测试耗时 487.0 秒，整次重建与导出提速 3.96 倍。纯重建 470.8 秒，原版 900 秒门槛为 `PASS`。全部 2.94 亿个颜色样本中，99.9943% 与原版相同，其余最大差值 1 DN，RMSE 为 0.00757 DN；暗部 RMSE 为 0.00628 DN。Orientation、BlackLevel、WhiteLevel、ColorMatrix1、AsShotNeutral 和 PhotometricInterpretation 均相同。峰值进程 RSS 为 6.40 GiB，单个原生网络执行器记录的最大 Metal 分配为 1.63 GiB。
 
@@ -74,7 +85,7 @@ macos/.venv/bin/python macos/benchmark_metal.py --network controller --frames 14
 
 M2 Pro 上，864 × 864 RArm 单次推理从 7.309 秒降到 0.860 秒，提速 8.50 倍；输出最大浮点误差 2.28 × 10⁻⁶。完整 RAW 验收比较相机线性 DNG 的全部像素、暗部和元数据，记录在 `BENCHMARK.json`。Fast 和 Stormer 的原版网络路径已适配 Metal，原生网络加速范围为 v9.8。
 
-## 上游集成
+## 独立维护与上游接口
 
 公开核心的独立验证和作者应用的接入接口见 [上游集成说明](INTEGRATION.md)。
 
@@ -90,8 +101,8 @@ M2 Pro 上，864 × 864 RArm 单次推理从 7.309 秒降到 0.860 秒，提速 
 uv python install 3.10
 uv venv --python 3.10 macos/.venv
 uv pip install --python macos/.venv/bin/python -r macos/requirements.txt
-macos/.venv/bin/python macos/prepare.py /absolute/path/Jiangtherapee-Bridge-2.3.9-Windows-x64.zip
-macos/.venv/bin/python macos/prepare_modes.py /absolute/path/Jiangtherapee-Bridge-2.3.9-Windows-x64.zip
+macos/.venv/bin/python macos/prepare.py /absolute/path/Jiangtherapee-Bridge-2.3.27-Windows-x64.zip
+macos/.venv/bin/python macos/prepare_modes.py /absolute/path/Jiangtherapee-Bridge-2.3.27-Windows-x64.zip
 macos/.venv/bin/python macos/build_native.py
 macos/.venv/bin/python macos/build_metal.py
 macos/.venv/bin/python macos/extract_original_ui.py
@@ -100,7 +111,7 @@ macos/.venv/bin/python macos/build_portable.py
 
 PyPI 安装可指定 `--index-url https://pypi.tuna.tsinghua.edu.cn/simple`。字节码使用 Python 3.10，WGPU 使用 0.31.0。`Core-Only-Source-Code` 的 Python 3.12 验证环境独立保留。
 
-官方 ZIP SHA-256：`66367390fd0efdc46002411b9117685716258d3bed0571ac74ecbe83d2c31c06`。提取文件的散列记录在各后端 `manifest.json`。构建脚本校验 LibRaw、CMake 源码包和本仓库 Nikon HE 补丁，并对本机动态库签名。原始包、提取模块、模型和生成库保存在 Git 忽略的 `vendor`，许可证沿用仓库 `Third-Party-Licenses` 与提取资源中的文件。
+官方 2.3.27 ZIP SHA-256：`70c16b20cdaa03530ba220ccbc4d597d8429e781b522b0e8e086f00fb421aec9`。提取文件的散列记录在各后端 `manifest.json`。构建脚本校验随官方包发布的 LibRaw_HE_Fixes_20261007 对应源码和固定 CMake 源码包，并对本机动态库签名。原始包、提取模块、模型和生成库保存在 Git 忽略的 `vendor`，许可证沿用仓库 `Third-Party-Licenses` 与提取资源中的文件。
 
 ## 命令行
 

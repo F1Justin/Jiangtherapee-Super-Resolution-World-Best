@@ -1,4 +1,4 @@
-"""Run Bridge 2.3.9 Fast K14 with native macOS libraries and Metal."""
+"""Run Bridge 2.3.27 Fast K14 with native macOS libraries and Metal."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import platform
 import sys
+from release import TAG
 
 
 def main() -> None:
@@ -14,7 +15,7 @@ def main() -> None:
         raise SystemExit("Use macos/.venv/bin/python (arm64 Python 3.10)")
     root = Path(__file__).resolve().parent / "vendor" / "fast"
     if not (root / "fastk14_app.pyc").is_file():
-        raise SystemExit("Run macos/prepare.py with the Bridge 2.3.9 Windows ZIP first")
+        raise SystemExit("Run macos/prepare.py with the Bridge 2.3.27 Windows ZIP first")
     os.environ["WGPU_BACKEND_TYPE"] = "Metal"
     os.environ["JSR_WGPU_BACKEND"] = "Metal"
     os.environ["OMP_NUM_THREADS"] = "4"
@@ -77,7 +78,7 @@ def main() -> None:
         if report_path.is_file():
             report = json.loads(report_path.read_text(encoding="utf-8"))
             report["macos_port"] = {
-                "release": "jb-v2.3.9",
+                "release": TAG,
                 "runtime": platform.python_version(),
                 "architecture": platform.machine(),
                 "backend": "Metal",
@@ -88,8 +89,12 @@ def main() -> None:
                 "opencv_threads": cv2.getNumThreads(),
             }
             report["cpu_affinity"] = None
-            from finish import preserve_orientation
-            preserve_orientation(output, Path(report['reference']), initial_images)
+            from output_metadata import finalize
+            finalize(output, [report['reference']], 'fast', initial_images)
+            updated = json.loads(report_path.read_text(encoding='utf-8'))
+            updated['macos_port'] = report['macos_port']
+            updated['cpu_affinity'] = None
+            report = updated
             policy = report.get("resource_plan", {})
             policy["cpu_threads"] = len(policy.pop("cpu_affinity", []))
             report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")

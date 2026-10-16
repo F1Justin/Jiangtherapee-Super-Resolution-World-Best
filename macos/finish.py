@@ -18,13 +18,12 @@ def preserve_orientation(output: Path, source: Path, initial_images=None) -> Non
     if not tool:
         raise RuntimeError('Install ExifTool to preserve camera orientation in exports')
     value = subprocess.check_output([tool, '-s3', '-n', '-Orientation', str(source)], text=True).strip()
-    if value not in {str(i) for i in range(1, 9)}:
-        return
     paths = [p for p in output.rglob('*') if p.suffix.lower() in {'.dng', '.tif', '.tiff'}]
     if initial_images is not None:
         paths = [p for p in paths if initial_images.get(str(p.resolve())) != p.stat().st_mtime_ns]
     if paths:
-        subprocess.run([tool, '-overwrite_original_in_place', f'-Orientation#={value}', *map(str, paths)], check=True)
+        if value in {str(i) for i in range(1, 9)}:
+            subprocess.run([tool, '-overwrite_original_in_place', f'-Orientation#={value}', *map(str, paths)], check=True)
         fingerprints = {}
         for path in paths:
             digest = hashlib.sha256()
@@ -46,8 +45,19 @@ def preserve_orientation(output: Path, source: Path, initial_images=None) -> Non
                     update(child)
                 outputs = item.get('outputs', {})
                 dng = outputs.get('dng') if isinstance(outputs, dict) else None
-                if isinstance(dng, dict) and 'sha256' in dng and isinstance(outputs.get('compression'), dict):
+                if (isinstance(dng, dict) and 'sha256' in dng and isinstance(outputs.get('compression'), dict)
+                        and str(Path(dng.get('path', '')).resolve()) in fingerprints):
                     outputs['compression']['output_sha256'] = dng['sha256']
+                    import tifffile
+                    with tifffile.TiffFile(dng['path']) as tif:
+                        pages = list(tif.pages)
+                        for page in list(pages):
+                            if page.pages:
+                                pages.extend(page.pages)
+                        raw = max(pages, key=lambda page: page.imagewidth * page.imagelength)
+                        compression = int(raw.compression)
+                    outputs['compression']['compression_tag'] = compression
+                    outputs['compression']['status'] = 'NATIVE_LOSSLESS_JPEG' if compression == 7 else 'UNCOMPRESSED_LOSSLESS'
             elif isinstance(item, list):
                 for child in item:
                     update(child)

@@ -31,7 +31,7 @@ def main():
         return reply['result']
     results = {}
     try:
-        files = [str(p.resolve()) for p in sorted(args.fixtures.glob('*.dng'))]
+        files = [str(p.resolve()) for p in sorted(args.fixtures.glob('*.dng'))[:14]]
         selected = request('jsr/select', {'paths':files,'engine':'fastk14'})
         payload = {'engine':'fastk14','mode':'full','output':str(args.output.resolve()),'prefix':'GUI_test',
                    'manual':True,'black':selected['black'],'read_noise':0,'fullwell':20000,
@@ -56,7 +56,7 @@ def main():
             if not outputs:
                 raise RuntimeError('Missing DNG')
             with rawpy.imread(str(outputs[0])) as raw:
-                shape = list(raw.raw_image_visible.shape)
+                shape = list(raw.postprocess(use_camera_wb=True, user_flip=0, output_bps=16).shape)
             if shape[:2] != [selected['height']*2,selected['width']*2] or len(shape) != 3 or shape[2] not in (3,4):
                 raise RuntimeError('Output shape: '+str(shape))
             results[engine] = {'state':status['state'],'seconds':round(time.monotonic()-start,2),'shape':shape}

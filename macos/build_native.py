@@ -7,6 +7,8 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import zipfile
+from release import LIBRAW_SOURCE_NAME, LIBRAW_SOURCE_SHA256, sha256, extract_shared, ARCHIVE_NAME
 
 ROOT = Path(__file__).resolve().parent
 VENDOR = ROOT / 'vendor'
@@ -23,31 +25,38 @@ def run(args, **kwargs):
 def main():
     VENDOR.mkdir(exist_ok=True)
     source = VENDOR / 'libraw-source'
-    for name, url, expected in SOURCES:
-        archive = VENDOR / name
-        if not archive.exists():
-            run(['curl', '-fLsS', '--retry', '3', '--retry-all-errors', '-o', archive, url])
-        if hashlib.sha256(archive.read_bytes()).hexdigest() != expected:
-            raise SystemExit(f'Source archive checksum mismatch: {name}')
-    if not (source / '.jsr-patched').exists():
+    archive = VENDOR / LIBRAW_SOURCE_NAME
+    if not archive.exists():
+        extract_shared(VENDOR / ARCHIVE_NAME)
+    if sha256(archive) != LIBRAW_SOURCE_SHA256:
+        raise SystemExit('Official LibRaw source archive checksum mismatch')
+    name, url, expected = SOURCES[1]
+    cmake_archive = VENDOR / name
+    if not cmake_archive.exists():
+        run(['curl', '-fLsS', '--retry', '3', '-o', cmake_archive, url])
+    if sha256(cmake_archive) != expected:
+        raise SystemExit('LibRaw CMake checksum mismatch')
+    marker = source / '.jsr-patched'
+    if not marker.exists() or marker.read_text().strip() != LIBRAW_SOURCE_SHA256:
         if source.exists():
             shutil.rmtree(source)
         source.mkdir()
-        for name, _, _ in SOURCES:
-            with tarfile.open(VENDOR / name) as archive:
-                for member in archive.getmembers():
-                    member.name = '/'.join(member.name.split('/')[1:])
-                    if member.name:
-                        archive.extract(member, source, filter='data')
-        patch_bytes = (ROOT.parent / 'Third-Party-Licenses/LibRaw/libraw-0.22.2-nikon-he.patch').read_bytes()
-        if hashlib.sha256(patch_bytes).hexdigest() != '633864efc205602e906e986f9cdb3bc1302a7d3e504ca452312dcc729222b17c':
-            raise SystemExit('Nikon HE patch checksum mismatch')
-        patch = patch_bytes.decode()
-        # The supplied qmake hunk targets a different .pro layout; CMake recursively finds the decoder sources.
-        sections = patch.split('diff --git ')
-        applicable = ''.join('diff --git ' + part for part in sections[1:] if not part.startswith('a/buildfiles/libraw.pro '))
-        run(['patch', '-d', source, '-p1'], input=applicable, text=True)
-        (source / '.jsr-patched').write_text('LibRaw 0.22.2 + Nikon HE 499bfd4; CMake arm64\n')
+        with zipfile.ZipFile(archive) as package:
+            for entry in package.namelist():
+                if not entry.startswith('LibRaw-0.22.2/') or entry.endswith('/'):
+                    continue
+                relative = Path(entry).relative_to('LibRaw-0.22.2')
+                if '..' in relative.parts:
+                    raise ValueError('Unsafe source path')
+                target = source / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(package.read(entry))
+        with tarfile.open(cmake_archive) as package:
+            for member in package.getmembers():
+                member.name = '/'.join(member.name.split('/')[1:])
+                if member.name:
+                    package.extract(member, source, filter='data')
+        marker.write_text(LIBRAW_SOURCE_SHA256 + '\n')
     build = VENDOR / 'libraw-build'
     prefix = VENDOR / 'libraw'
     brew = subprocess.check_output(['brew', '--prefix'], text=True).strip()

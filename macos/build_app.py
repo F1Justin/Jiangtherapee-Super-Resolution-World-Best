@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import plistlib
+from release import UPSTREAM_VERSION
 
 
 root = Path(__file__).resolve().parent
@@ -14,8 +15,8 @@ binary.parent.mkdir(parents=True, exist_ok=True)
     "CFBundleDisplayName": "JSR Metal",
     "CFBundleExecutable": "JSR",
     "CFBundlePackageType": "APPL",
-    "CFBundleVersion": "2.3.9",
-    "CFBundleShortVersionString": "2.3.9",
+    "CFBundleVersion": UPSTREAM_VERSION,
+    "CFBundleShortVersionString": UPSTREAM_VERSION,
     "NSHighResolutionCapable": True,
     "LSMinimumSystemVersion": "13.0",
 }))

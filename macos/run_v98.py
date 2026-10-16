@@ -98,8 +98,10 @@ def main():
     finally:
         observed_resources = resources.close() if resources else {}
     if '--output-dir' in sys.argv and '--raw-frame' in sys.argv:
-        from finish import preserve_orientation
-        preserve_orientation(Path(sys.argv[sys.argv.index('--output-dir') + 1]), Path(sys.argv[sys.argv.index('--raw-frame') + 1]), initial_images)
+        from output_metadata import finalize
+        frames = [sys.argv[i + 1] for i, arg in enumerate(sys.argv) if arg == '--raw-frame']
+        compress = not ('--dng-compression' in sys.argv and sys.argv[sys.argv.index('--dng-compression') + 1] == 'none')
+        finalize(Path(sys.argv[sys.argv.index('--output-dir') + 1]), frames, 'v98', initial_images, compress)
     if '--output-dir' in sys.argv:
         import json
         output = Path(sys.argv[sys.argv.index('--output-dir') + 1])

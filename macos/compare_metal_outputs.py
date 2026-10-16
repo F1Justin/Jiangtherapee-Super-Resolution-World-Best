@@ -59,6 +59,15 @@ def raw_series(path):
                    key=lambda i: np.prod(image.series[i].shape))
 
 
+def load_pixels(path):
+    series = raw_series(path)
+    try:
+        return tifffile.memmap(path, series=series)
+    except ValueError:
+        # Compression=7 is decoded to a temporary mapping to keep full-image RAM bounded.
+        return tifffile.imread(path, series=series, out='memmap')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('reference', type=Path)
@@ -66,8 +75,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--block-native', type=int, default=384)
     args = parser.parse_args()
-    reference = tifffile.memmap(args.reference, series=raw_series(args.reference))
-    optimized = tifffile.memmap(args.optimized, series=raw_series(args.optimized))
+    reference = load_pixels(args.reference)
+    optimized = load_pixels(args.optimized)
     report = compare_arrays(reference, optimized, args.block_native)
     metadata = {}
     with tifffile.TiffFile(args.reference) as a, tifffile.TiffFile(args.optimized) as b:

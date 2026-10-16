@@ -33,3 +33,18 @@ window.macSelfTest=async(runJob=false)=>{
   }
   return {host:'WKWebView',modes,job,author:!!$('#author-support img'),errors:$('#jsr-error').textContent};
 };
+window.macBatchSelfTest=async()=>{
+  const wait=async(fn)=>{for(let i=0;i<600;i++){if(fn())return;await new Promise(r=>setTimeout(r,100));}throw Error('批量UI等待超时：'+$('#jsr-error').textContent);};
+  $('[data-engine="fastk14"]').click();
+  await wait(()=>$('#jsr-dialog').open&&!$('#jsr-select').disabled);
+  $('#jsr-camera-preset').value='z8';$('#jsr-camera-preset').dispatchEvent(new Event('change'));
+  await wait(()=>!$('#jsr-batch-launch').hidden);
+  $('#jsr-batch-launch').click();$('#jsr-batch-scan').click();
+  await wait(()=>document.querySelectorAll('.jsr-batch-card').length===2&&!$('#jsr-batch-scan').disabled);
+  $('#jsr-output').value='/tmp';$('#jsr-output').dispatchEvent(new Event('input'));
+  await wait(()=>!$('#jsr-start').disabled);$('#jsr-start').click();
+  await wait(()=>$('#jsr-start').textContent==='开始批量合成 →'&&!$('#jsr-start').disabled);
+  const groups=[...document.querySelectorAll('.jsr-batch-card-status')].map(e=>e.textContent);
+  if(groups.some(text=>!text.includes('准备完成')))throw Error(JSON.stringify(groups));
+  return {host:'WKWebView',groups,ready:true,errors:$('#jsr-error').textContent};
+};

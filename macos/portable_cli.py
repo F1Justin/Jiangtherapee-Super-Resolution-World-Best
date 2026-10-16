@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-VERSION = '2.3.9-macos-preview.2'
+from release import VERSION, UPSTREAM_VERSION, TAG, ARCHIVE_SHA256
 
 
 def entry(name):
