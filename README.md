@@ -1,10 +1,23 @@
-# Jiangtherapee Super Resolution
+# Jiangtherapee Super Resolution · macOS 版
+
+> [!IMPORTANT]
+> **这是 JSR Bridge 的 macOS 移植版，由本 fork 维护。**
+> **This fork provides the macOS port of JSR Bridge.**
+>
+> **⬇️ [下载 macOS 版 / Download for macOS](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases/latest)** · [全部版本 / All releases](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases)
+>
+> 当前发布包要求 **Apple Silicon（M 系列）和 macOS 14 或更高版本**。请在 Releases 的 **Assets** 中下载 macOS 便携包。
+> The current release requires **Apple Silicon (M-series) and macOS 14 or later**. Download the macOS portable package from **Assets** on the Releases page.
+
+本 macOS 移植基于 [y-g-jiang 的原项目](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best)。下方保留上游的项目介绍、效果对比与研究说明。
+
+This macOS port is based on [the original project by y-g-jiang](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best). The upstream project overview, comparisons, and research notes are preserved below.
 
 JSR 将 RAW 连拍重建为高分辨率线性 RGB，面向高动态摄影，重点约束暗部亮度、颜色响应与周期伪影。4 至 14 帧连拍均可获得良好的重建效果，拍摄时候为防止对焦抖动影响效果建议AF-S来连拍，或者MF后连续单张拍摄。更高帧数暂不被支持。
 
 JSR reconstructs RAW bursts into high-resolution linear RGB for high dynamic range photography, with explicit control of shadow brightness, color response, and periodic artifacts. Bursts of 4 to 14 frames can all yield good reconstruction results. When shooting, to prevent focus jitter from affecting the results, it is recommended to use AF-S for burst shooting, or switch to MF and take consecutive single shots. Bursts longer than 14 frames are not currently supported.
 
-[下载 EXE / Download EXE](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases/latest) · [仅需四张 / Just four frames](#burst-examples) · [高张数对比 / Longer bursts](#longer-bursts) · [论文实验图 / Paper comparisons](#paper-comparisons) · [连续数据流 / Data flow](#data-flow) · [中文介绍](#chinese) · [English](#english) · [论文 / Paper](#paper)
+[下载 macOS 版 / Download for macOS](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases/latest) · [仅需四张 / Just four frames](#burst-examples) · [高张数对比 / Longer bursts](#longer-bursts) · [论文实验图 / Paper comparisons](#paper-comparisons) · [连续数据流 / Data flow](#data-flow) · [中文介绍](#chinese) · [English](#english) · [论文 / Paper](#paper)
 
 <a name="results"></a>
 
@@ -278,11 +291,25 @@ Left: relative-loss prediction RMSE, lower is better. Right: median within-image
 
 <a name="download"></a>
 
-## 下载 / Download
+## macOS 下载与运行 / Download and run on macOS
 
-JSR（Jiangtherapee Super Resolution）的 Windows x64 EXE 通过 [Releases](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases) 发布。请在对应版本的 Assets 中下载程序；运行要求及随附文件以该版本的发布说明为准。
+**macOS 安装包在本仓库的 [Releases](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases) 页面下载：[前往最新版本 / Get the latest release](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases/latest)。**
 
-The Windows x64 EXE for JSR (Jiangtherapee Super Resolution) is distributed through [Releases](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases). Download the application from the release's Assets section. Runtime requirements and accompanying files are described in the release notes.
+当前版本为 [JSR Bridge 2.3.27-macos.1](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases/tag/v2.3.27-macos.1)，基于上游 Jiangtherapee Bridge 2.3.27。
+
+1. 打开 Releases，在该版本的 **Assets** 中下载 `JSR-Bridge-2.3.27-macos.1-macOS-arm64-portable.zip`。
+2. 完整解压下载的 ZIP，保留解压目录中的随附文件，然后打开 `JSR Bridge.app`。
+3. 系统要求：**Apple Silicon（M 系列）Mac，macOS 14 或更高版本**。当前发布包不支持 Intel Mac。
+4. 应用采用 **ad-hoc 签名，尚未经过 Apple 公证**；首次启动可能需要在 macOS「系统设置 → 隐私与安全性」中允许打开。完整运行说明及已知限制请查看该版本的发布说明。
+
+**Download the macOS package from this repository's [Releases](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases).** The current release is [JSR Bridge 2.3.27-macos.1](https://github.com/F1Justin/Jiangtherapee-Super-Resolution-World-Best/releases/tag/v2.3.27-macos.1), based on upstream Jiangtherapee Bridge 2.3.27.
+
+1. Under **Assets**, download `JSR-Bridge-2.3.27-macos.1-macOS-arm64-portable.zip`.
+2. Extract the entire ZIP, keep the accompanying files together, and open `JSR Bridge.app`.
+3. Requires an **Apple Silicon (M-series) Mac running macOS 14 or later**. The current package does not support Intel Macs.
+4. The app is **ad-hoc signed and has not been notarized by Apple**. On first launch, you may need to allow it in **System Settings → Privacy & Security**. See the release notes for full instructions and known limitations.
+
+Windows 用户请前往[上游项目的 Releases](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases)。 / For Windows downloads, see the [upstream project's Releases](https://github.com/y-g-jiang/Jiangtherapee-Super-Resolution-World-Best/releases).
 
 本仓库用于二进制程序及配套论文的发布，不包含算法源代码或源码历史。
 
