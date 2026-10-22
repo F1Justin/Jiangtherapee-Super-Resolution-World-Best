@@ -1,6 +1,6 @@
 # Jiangtherapee Bridge — Apple Silicon / Metal
 
-三个后端均从官方 Bridge 2.3.27 Windows 包提取原始 Python 3.10 字节码与模型权重，使用本机 arm64 Python、OpenCV 和 Metal 执行。v9.8 默认采用原生 MPSGraph FP32 Controller / GreenFiLM RArm；融合默认采用原生 Metal FP32 前段，特征和 qmap 保留在 GPU。Fast 和 Stormer 使用原版 WGPU Metal。Nikon Z6 III High Efficiency* NEF 使用仓库提供的 Nikon HE 补丁重新编译 LibRaw 0.22.2，并接入本机 RAW 桥接库。
+三个后端均从官方独立 JSR 17.3.1 Windows 包提取原始 Python 3.10 字节码与模型权重，使用本机 arm64 Python、OpenCV 和 Metal 执行。v9.8 默认采用原生 MPSGraph FP32 Controller / GreenFiLM RArm；融合默认采用原生 Metal FP32 前段，特征和 qmap 保留在 GPU。Fast 和 Stormer 使用原版 WGPU Metal。Nikon Z6 III High Efficiency* NEF 使用仓库提供的 Nikon HE 补丁重新编译 LibRaw 0.22.2，并接入本机 RAW 桥接库。
 
 ## 启动
 
@@ -15,24 +15,26 @@
 
 本地预览包采用 ad-hoc 签名，Apple 公证尚未完成。第三方许可和 LibRaw 源码/补丁保存在包内。构建入口为 `macos/.venv/bin/python macos/build_portable.py`，产物写入忽略目录 `macos/dist`。打包后的运行过程使用同包依赖。此 fork 独立维护 macOS 移植，版本号同时标识官方基线与 macOS 修订号。
 
-新版 GUI 复用官方 Windows 2.3.27 包内的 HTML、CSS 与 JavaScript，由系统 WKWebView 承载。原版三模式选择、RAW 文件列表与预览、Stormer 框选、参数、PTC / 色彩配置搜索、输出选项、日志、进度、停止与打开结果接入本机后端。作者支持入口与 QQ 群信息保留。JSR 页面独立运行。
+新版 GUI 复用官方独立 JSR 17.3.1 包内的 HTML、CSS 与 JavaScript，由系统 WKWebView 承载。三模式页签、逐张 RAW 输入、参数、PTC / 色彩配置搜索、输出选项、日志、进度、停止与打开结果接入本机后端。独立版 GUI 使用全图重建；Stormer CLI 保留 ROI 验证接口。作者支持入口与 QQ 群信息保留。JSR 页面独立运行。
 
-Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口换算为归一化单位。手动参数由用户填写；0 DN / 20000 e⁻ 是验收测试参数。v9.8 沿用已验证的自动处理路径，采用 MPSGraph / Metal；其线性 DNG 在重建后使用官方原生无损 JPEG 分块压缩。三个模式保留照片旋转标记。预览按传感器原始方向显示，Stormer 以同一参考帧的坐标执行局部处理。
+Fast / Stormer 使用匹配暗场或手动标定。界面的读噪声单位为 DN，Fast 入口换算为归一化单位。手动参数由用户填写；0 DN / 20000 e⁻ 是验收测试参数。K14 必须提供实际适用的黑场，采用 MPSGraph / Metal；其线性 DNG 在重建后使用官方原生无损 JPEG 分块压缩。三个模式保留照片旋转标记。Stormer 采用全局单应与高光掩膜残差配准；CLI 选区以参考帧传感器坐标执行。
 
 每次运行在所选输出目录创建独立任务目录，并保存 `processing.log`。停止操作结束计算进程组，已有输出保留在任务目录。应用退出时结束后台计算。GUI 通过应用内消息与本地 JSON 行协议通信。
 
-原版网页资源位于忽略目录 `vendor/original-ui`，由 `extract_original_ui.py` 校验官方 ZIP 后提取。`build_web_ui.py` 对 v9.8 校准路径、DNG 说明与停止文案执行版本锁定的适配。原始资产与模型仅进入本地 portable 产物。
+原版网页资源位于忽略目录 `vendor/original-ui`，由 `extract_original_ui.py` 校验官方 ZIP 后提取。`build_web_ui.py` 对输出路径与停止文案执行版本锁定的适配；K14 黑场校验沿用官方界面。原始资产与模型仅进入本地 portable 产物。
 
-## 2.3.27 macOS 更新
+## 17.3.1 macOS 更新
 
-当前构建版本为 `2.3.27-macos.1`。三套原始后端与模型从校验过的官方包提取，保留 Apple Silicon 原生融合与 MPSGraph 加速。Nikon HE 解码器升级为官方 2026-10-07 修复源码；Stormer 黑场归一化、高光保护和新版输出链路随原始后端更新。
+当前构建版本为 `17.3.1-macos.1`。上游对比见 [17.3.1 拆包分析](UPSTREAM-17.3.1.md)，实测见 [17.3.1 验收记录](RELEASE-17.3.1.md)。
 
-- 三模式 DNG 使用原生无损压缩；按实际参考帧写入 EXIF、镜头与 Nikon 私有数据，并保留重建像素和色彩校准。
-- 新版原始 JSR 界面包含 Z8 相机预设、102 份黑场，以及 Z8 连拍目录分组、审阅、顺序重建、批次报告和取消。
-- 每组保存独立选择、标定和输出目录。ISO 未列入 PTC 表时在相邻满阱值之间插值；回退选择记录于 `CAMERA_PRESET.json`。
-- Mac 应用聚焦三模式 JSR 工作流；Windows Bridge 的照片库和独立 DeepSeek 助手不在本移植的功能范围内。
+- 同步独立 JSR 的 Stormer / Fast / K14 界面及后端，模型权重保持相同，K14 保留 MPSGraph / 原生 Metal。
+- Stormer 从 SPyNet 改为全局单应＋高光掩膜的自适应残差场，恢复和去鬼影使用相同坐标。
+- 官方因黑场漂移撤回机型内置黑场和专用批量；此版删除旧 Z8 预设与批量代码。K14 必须提供黑场；Fast / Stormer 可用匹配黑场或可靠手动参数。
+- 所有机型继续提供 PTC 选择；识别成功时按名义 ISO 在相邻满阱之间插值。逐张选片在满组后读取元数据，本机拖放经 WKWebView 桥接。
+- 三模式压缩 DNG 及实际参考帧 EXIF / Nikon 私有数据保留。Nikon HE 解码器与 2.3.27 相同，对应完整源码随包携带。
+- Mac 应用提供三模式 JSR，未移植独立 DeepSeek 助手。
 
-验收摘要见 [2.3.27 验收记录](RELEASE-2.3.27.md)，完整本机记录保存在 `validation/release-2.3.27/`。Z6 III 实拍覆盖 Fast 全图、Stormer 双输出选区及 v9.8 全图。Z8 预设与批量使用合成测试组验证协议与标定隔离，尚无 Z8 真实亮场的成像验收。原生 DNG 重打包自带像素读回核验。新旧版性能受运行环境与分块影响，下方历史速度不代表此次更新提速。
+[前一版 2.3.27 验收记录](RELEASE-2.3.27.md)与下方历史性能保留。不同分块、可用内存与标定条件下的耗时不能直接作为版本提速比例。
 
 ## 历史真实 RAW 测试（2.3.9）
 
@@ -101,8 +103,9 @@ M2 Pro 上，864 × 864 RArm 单次推理从 7.309 秒降到 0.860 秒，提速 
 uv python install 3.10
 uv venv --python 3.10 macos/.venv
 uv pip install --python macos/.venv/bin/python -r macos/requirements.txt
-macos/.venv/bin/python macos/prepare.py /absolute/path/Jiangtherapee-Bridge-2.3.27-Windows-x64.zip
-macos/.venv/bin/python macos/prepare_modes.py /absolute/path/Jiangtherapee-Bridge-2.3.27-Windows-x64.zip
+macos/.venv/bin/python macos/prepare.py /absolute/path/JSR_V17.3.1.zip
+macos/.venv/bin/python macos/prepare_modes.py /absolute/path/JSR_V17.3.1.zip
+# 另将官方 Bridge 2.3.27 ZIP 放入 macos/vendor，供首次提取同一 LibRaw 对应源码
 macos/.venv/bin/python macos/build_native.py
 macos/.venv/bin/python macos/build_metal.py
 macos/.venv/bin/python macos/extract_original_ui.py

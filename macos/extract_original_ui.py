@@ -3,15 +3,15 @@ from pathlib import Path
 import struct
 import subprocess
 import tempfile
-from release import ROOT, PREFIX, verified_archive
+from release import ROOT, PREFIX, UI_EXECUTABLE, verified_archive
 
 REQUIRED = {'index.html', 'style.css', 'jsr.css', 'desktop.js', 'jsr.js',
-            'assets/author.jpg', 'updates.js', 'timeline.js', 'app.js', 'jsr-batch.js'}
+            'assets/author.jpg', 'standalone.css', 'standalone.js'}
 
 
 def extract():
     with verified_archive() as package:
-        executable = package.read(PREFIX + 'Jiangtherapee Bridge.exe')
+        executable = package.read(PREFIX + UI_EXECUTABLE)
     pe = struct.unpack_from('<I', executable, 0x3c)[0]
     count = struct.unpack_from('<H', executable, pe + 6)[0]
     optional_size = struct.unpack_from('<H', executable, pe + 20)[0]
@@ -29,6 +29,9 @@ def extract():
                 return relative + raw_offset
         raise ValueError('PE pointer outside file-backed sections')
     destination = ROOT / 'vendor/original-ui'
+    if destination.exists():
+        import shutil
+        shutil.rmtree(destination)
     found = set()
     with tempfile.TemporaryDirectory(prefix='jsr-web-assets-') as temporary:
         compressed = Path(temporary) / 'asset.br'

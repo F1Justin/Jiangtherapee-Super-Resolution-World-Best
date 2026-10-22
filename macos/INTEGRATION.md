@@ -76,7 +76,7 @@ with NativeTapSession(covariance, y0r, x0r, height, width, N, M) as session:
 
 ## 发布包兼容入口与验证范围
 
-`prepare.py`、`prepare_modes.py`、`run_fast.py`、`run_stormer.py` 和 `run_v98.py` 提供 Bridge 2.3.27 完整流程的兼容运行方式。准备脚本从用户提供、校验过散列的官方 Windows ZIP 中提取 Python 3.10 字节码及资源。运行钩子与字节码调度常量对应这个固定发布版本。作者源码集成采用上面的显式调用接口。
+`prepare.py`、`prepare_modes.py`、`run_fast.py`、`run_stormer.py` 和 `run_v98.py` 提供 JSR 17.3.1 完整流程的兼容运行方式。准备脚本从用户提供、校验过散列的官方 Windows ZIP 中提取 Python 3.10 字节码及资源。运行钩子与字节码调度常量对应这个固定发布版本。作者源码集成采用上面的显式调用接口。
 
 照片、提取字节码、额外模型、生成库、虚拟环境和完整运行产物由 Git 忽略。`BENCHMARK.json` 保存脱敏数据。完整 RAW 验证使用私人拍摄的 14 张 Nikon Z6 III HE* 照片；其他相机和其他 Apple 芯片的结果通过相同工具测量。Fast 验证了全图，Stormer 验证了两种去鬼影配置的选区，v9.8 验证了全图及原版像素比较。
 

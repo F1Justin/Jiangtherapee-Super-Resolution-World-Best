@@ -15,9 +15,9 @@ from PyInstaller.archive.readers import CArchiveReader, ZlibArchiveReader
 
 
 from release import ARCHIVE_SHA256, PREFIX, TAG, UPSTREAM_VERSION, extract_shared, sha256
-BACKEND_SHA256 = "a4778dc549b8f7e84145930ae13a115bd1cc31b14f549484b344a01e8a46d4b1"
+BACKEND_SHA256 = "db977a8d285364939d143f2878ad6e3a79d784b8f6a0508fabffa93949d3b7f2"
 MODULES = {
-    "raw_metadata", "diagnostic_entry", "fast_align", "fast_calibration", "fast_frontend_run", "fast_ptc",
+    "measured_dark_lut", "raw_metadata", "diagnostic_entry", "fast_align", "fast_calibration", "fast_frontend_run", "fast_ptc",
     "fast_signal", "fastk14_app", "frontend", "frontend_reliable", "frontend_steered",
     "native_dng", "network_reliable", "registration_candidate", "registration_linear_support",
     "resident_k14", "resource_plan", "source_atlas", "stable_gather", "support_bounds",
@@ -38,11 +38,13 @@ def main() -> None:
     if sys.version_info[:2] != (3, 10):
         parser.error("Python 3.10 is required by the original bytecode")
     if sha256(args.archive) != ARCHIVE_SHA256:
-        parser.error("Archive SHA-256 differs from the official Bridge 2.3.27 release")
+        parser.error("Archive SHA-256 differs from the official JSR " + UPSTREAM_VERSION + " release")
     extract_shared(args.archive)
     root = Path(__file__).resolve().parent
     vendor = root / "vendor"
     output = vendor / "fast"
+    if output.exists():
+        shutil.rmtree(output)
     output.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(args.archive) as archive:
         prefix = PREFIX + "resources/"

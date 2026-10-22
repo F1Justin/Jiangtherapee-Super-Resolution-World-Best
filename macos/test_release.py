@@ -1,62 +1,59 @@
-"""Regression checks for per-burst calibration and immutable batch selections."""
+"""Calibration admission and incomplete-input regressions for standalone JSR."""
 from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from batch_workflow import group_records
-from camera_presets import resolve_z8
+from camera_calibration import resolve_ptc
 from web_bridge import Bridge
 
 
-def selection(iso=100, compression=3, camera='NIKON Z 8', count=14):
-    return {'paths': [f'/fixture/{iso}-{i}.nef' for i in range(count)], 'reference': 6,
-        'width': 8280, 'height': 5520, 'white': 16383, 'black': 1008,
+def selection(count=14):
+    return {'paths': [f'/fixture/{i}.nef' for i in range(count)], 'reference': 7,
+        'width': 768, 'height': 768, 'white': 16383, 'black': 1008,
         'exposure_confirmation_required': False,
-        'frames': [{'camera': camera, 'iso': iso, 'nef_compression': compression, 'ev': 0, 'shutter': .001} for _ in range(count)]}
+        'frames': [{'camera': 'NIKON Z 8', 'iso': 100, 'ev': 0, 'shutter': .001} for _ in range(count)]}
 
 
-class Presets(unittest.TestCase):
-    def test_modes_and_interpolation(self):
-        a = resolve_z8(selection(50))
-        b = resolve_z8(selection(100))
-        middle = resolve_z8(selection(75, 14))
+class ReleaseAdmission(unittest.TestCase):
+    def test_ptc_interpolates_fullwell_not_gain(self):
+        a = resolve_ptc({'camera': 'NIKON Z 8', 'iso': 50})
+        b = resolve_ptc({'camera': 'NIKON Z 8', 'iso': 100})
+        middle = resolve_ptc({'camera': 'NIKON Z 8', 'iso': 75})
+        self.assertTrue(middle['matched'])
         self.assertAlmostEqual(middle['fullwell_e'], (a['fullwell_e'] + b['fullwell_e']) / 2)
-        self.assertEqual(middle['compression'], 3)
-        self.assertEqual(resolve_z8(selection(100, 13))['compression'], 4)
-        self.assertEqual(resolve_z8(selection(32))['fullwell_e'], a['fullwell_e'])
-        self.assertNotEqual(resolve_z8(selection(2000))['dark'], b['dark'])
+        self.assertEqual(middle['selection'], 'linear_ISO_FWC')
+        self.assertEqual(resolve_ptc({'camera': 'NIKON Z 8', 'iso': 25})['fullwell_e'], a['fullwell_e'])
 
-    def test_reject_other_camera(self):
-        with self.assertRaisesRegex(ValueError, 'Z8'):
-            resolve_z8(selection(camera='NIKON Z6_3'))
+    def test_unknown_camera_does_not_borrow_another_ptc(self):
+        self.assertFalse(resolve_ptc({'camera': 'NIKON Z6_3', 'iso': 2000})['matched'])
+        self.assertFalse(resolve_ptc({'camera': 'NIKON Z 8', 'iso': None})['matched'])
 
-    def test_batch_uses_saved_group_not_last_preview(self):
-        bridge = Bridge()
-        bridge.selections = {'first': selection(100), 'second': selection(2000)}
-        bridge.selected = bridge.selections['second']
+    def test_k14_rejects_missing_dark_even_with_manual_parameters(self):
+        bridge = Bridge(); bridge.selected = selection()
         with tempfile.TemporaryDirectory() as output:
-            p = {'engine': 'fastk14', 'selection_id': 'first', 'camera_preset': 'z8',
-                 'output': output, 'prefix': 'test', 'dng': True}
-            command, _ = bridge.command(p)
-            self.assertIn('/fixture/100-0.nef', command)
-            self.assertNotIn('/fixture/2000-0.nef', command)
-            self.assertEqual(bridge.preset['iso'], 100)
-            p['selection_id'] = 'second'
-            command, _ = bridge.command(p)
-            self.assertIn('/fixture/2000-0.nef', command)
-            self.assertEqual(bridge.preset['iso'], 2000)
-            bridge.request('jsr/batch-clear-selections', {})
-            with self.assertRaisesRegex(ValueError, '过期'):
-                bridge.command(p)
+            with self.assertRaisesRegex(ValueError, 'K14.*黑场'):
+                bridge.command({'engine': 'v98k14', 'output': output, 'prefix': 'test',
+                    'manual': True, 'black': 1008, 'read_noise': 0, 'fullwell': 20000, 'dng': True})
+            self.assertEqual(list(Path(output).iterdir()), [])
 
-    def test_capture_groups_never_use_copy_time(self):
-        records = [{'path': str(i), 'name': str(i), 'camera': 'NIKON Z 8', 'camera_key': 'z8',
-                    'timestamp': 100 + i * .1} for i in range(14)]
-        records += [{**r, 'path': 'second-'+r['path'], 'timestamp': r['timestamp'] + 20} for r in records]
-        records += [{'path': 'unknown', 'name': 'unknown', 'camera': 'NIKON Z 8', 'camera_key': 'z8', 'timestamp': 0}]
-        result = group_records(records, 14)
-        self.assertEqual([len(g['selected']) for g in result['groups']], [14, 14])
-        self.assertEqual(result['ungrouped'][0]['path'], 'unknown')
+    def test_retired_preset_cannot_silently_reenable_calibration(self):
+        bridge = Bridge(); bridge.selected = selection()
+        with self.assertRaisesRegex(ValueError, '撤回'):
+            bridge.command({'engine': 'fastk14', 'camera_preset': 'z8'})
+        for route in ('jsr/camera-preset', 'jsr/batch-scan'):
+            with self.assertRaisesRegex(ValueError, '撤回'):
+                bridge.request(route, {})
+
+    def test_partial_inputs_append_without_decoding_or_metadata(self):
+        bridge = Bridge()
+        with tempfile.TemporaryDirectory() as folder, patch('web_bridge.capture_metadata') as read:
+            paths = [str(Path(folder) / f'{i}.dng') for i in range(3)]
+            for p in paths: Path(p).touch()
+            bridge.select({'paths': paths[:2], 'engine': 'stormer7', 'max_count': True})
+            result = bridge.select({'paths': paths[1:], 'engine': 'stormer7', 'max_count': True, 'append': True})
+            self.assertEqual(result['paths'], [str(Path(p).resolve()) for p in paths])
+            self.assertNotIn('width', result)
+            read.assert_not_called()
 
 
 if __name__ == '__main__':

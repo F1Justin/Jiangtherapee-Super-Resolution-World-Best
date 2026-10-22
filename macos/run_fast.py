@@ -1,4 +1,4 @@
-"""Run Bridge 2.3.27 Fast K14 with native macOS libraries and Metal."""
+"""Run JSR 17.3.1 Fast K14 with native macOS libraries and Metal."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ def main() -> None:
         raise SystemExit("Use macos/.venv/bin/python (arm64 Python 3.10)")
     root = Path(__file__).resolve().parent / "vendor" / "fast"
     if not (root / "fastk14_app.pyc").is_file():
-        raise SystemExit("Run macos/prepare.py with the Bridge 2.3.27 Windows ZIP first")
+        raise SystemExit("Run macos/prepare.py with the JSR 17.3.1 Windows ZIP first")
     os.environ["WGPU_BACKEND_TYPE"] = "Metal"
     os.environ["JSR_WGPU_BACKEND"] = "Metal"
     os.environ["OMP_NUM_THREADS"] = "4"

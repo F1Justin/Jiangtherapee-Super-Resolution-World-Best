@@ -80,6 +80,8 @@ fn stable_tanh(x: f32) -> f32 {
 
 
 def main():
+    if '--raw-frame' in sys.argv and '--dark-frame' not in sys.argv:
+        raise SystemExit('JSR 17.3.1 K14 requires --dark-frame with an applicable dark RAW')
     configure()
     from finish import snapshot_images
     initial_images = snapshot_images(Path(sys.argv[sys.argv.index('--output-dir') + 1])) if '--output-dir' in sys.argv else {}

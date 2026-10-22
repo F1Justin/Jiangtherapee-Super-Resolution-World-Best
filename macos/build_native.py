@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tarfile
 import zipfile
-from release import LIBRAW_SOURCE_NAME, LIBRAW_SOURCE_SHA256, sha256, extract_shared, ARCHIVE_NAME
+from release import LIBRAW_SOURCE_NAME, LIBRAW_SOURCE_SHA256, sha256, ensure_libraw_source
 
 ROOT = Path(__file__).resolve().parent
 VENDOR = ROOT / 'vendor'
@@ -26,8 +26,7 @@ def main():
     VENDOR.mkdir(exist_ok=True)
     source = VENDOR / 'libraw-source'
     archive = VENDOR / LIBRAW_SOURCE_NAME
-    if not archive.exists():
-        extract_shared(VENDOR / ARCHIVE_NAME)
+    ensure_libraw_source()
     if sha256(archive) != LIBRAW_SOURCE_SHA256:
         raise SystemExit('Official LibRaw source archive checksum mismatch')
     name, url, expected = SOURCES[1]

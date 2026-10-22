@@ -1,4 +1,4 @@
-"""Prepare author GUI assets and the macOS-specific backend controls."""
+"""Prepare the verified standalone JSR UI with macOS output descriptions."""
 from pathlib import Path
 import shutil
 
@@ -11,20 +11,17 @@ def build(destination):
         if source.is_file():
             shutil.copy2(source, destination / source.name)
     original = ROOT / 'vendor/original-ui'
-    shutil.copytree(original, destination / 'original', dirs_exist_ok=True)
+    if (destination / 'original').exists():
+        shutil.rmtree(destination / 'original')
+    shutil.copytree(original, destination / 'original')
     source = (original / 'jsr.js').read_text()
     edits = {
-        "参考帧为第七张。": "参考帧以实际配准结果为准。",
-        "}else{\n  if(!dark&&!skipDark)": "}else if(engine!=='v98k14'){\n  if(!dark&&!skipDark)",
-        "$('#jsr-dark-fields').hidden=z||$('#jsr-manual').checked;": "$('#jsr-dark-fields').hidden=z||engine==='v98k14'||$('#jsr-manual').checked;",
-        "$('#jsr-dark-fields').hidden=!k&&$('#jsr-manual').checked;": "$('#jsr-dark-fields').hidden=engine==='v98k14'||(!k&&$('#jsr-manual').checked);",
-        "内置无损压缩线性 DNG（Compression=7），无需 Adobe DNG Converter。": "相机线性 DNG；macOS 原生无损压缩（Compression=7）。",
-        "第24500步最佳权重 · 整图 · 内置无损压缩 DNG": "第24500步最佳权重 · 整图 · MPSGraph / Metal",
-        "if(k)setMode('full');": "$('#jsr-tiff').parentNode.lastChild.textContent=engine==='v98k14'?'彩色 TIFF16':'线性 TIFF16';if(k)setMode('full');",
-        "已停止，未完成文件保留在 .partial 目录": "已停止，已有输出保留在任务目录",
+        'DNG 直接保存到此目录；日志集中存入 _logs，重名不会覆盖。':
+            '每次合成保存到独立任务目录，保留 processing.log 与诊断；重名不会覆盖。',
+        '已停止，未完成文件保留在 .partial 目录': '已停止，已有输出保留在任务目录',
     }
     for before, after in edits.items():
-        expected = 2 if before == '已停止，未完成文件保留在 .partial 目录' else 1
+        expected = 2 if before.startswith('已停止') else 1
         if source.count(before) != expected:
             raise RuntimeError('Author UI adaptation anchor changed: ' + before)
         source = source.replace(before, after)

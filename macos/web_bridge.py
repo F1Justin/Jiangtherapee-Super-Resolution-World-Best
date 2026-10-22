@@ -12,9 +12,8 @@ import signal
 import subprocess
 import sys
 import threading
-import uuid
-from camera_presets import capture_metadata, resolve_z8
-from batch_workflow import scan
+from camera_calibration import capture_metadata, resolve_ptc
+from release import UPSTREAM_VERSION
 
 ROOT = Path(__file__).resolve().parent
 RAW_EXTENSIONS = {'.nef', '.arw', '.cr2', '.cr3', '.dng', '.raf', '.rw2', '.orf', '.pef', '.srw', '.nrw'}
@@ -37,19 +36,21 @@ class Bridge:
         self.log = ''
         self.state = 'idle'
         self.lock = threading.Lock()
-        self.selections = {}
-        self.preset = None
 
     def select(self, payload):
         if self.state == 'running':
             raise ValueError('当前计算正在进行')
+        expected = 7 if payload.get('engine') == 'stormer7' else 14
         paths = [str(Path(p).expanduser().resolve(strict=True)) for p in payload.get('paths', [])]
+        if payload.get('append') and self.selected.get('engine') == payload.get('engine') and len(self.selected['paths']) < expected:
+            paths = list(dict.fromkeys([*self.selected['paths'], *paths]))
         if len(paths) > 256 or len(set(paths)) != len(paths):
             raise ValueError('请选择最多256张互不重复的 RAW')
         if any(Path(p).suffix.lower() not in RAW_EXTENSIONS or not Path(p).is_file() for p in paths):
             raise ValueError('输入文件须为 RAW')
-        if not paths:
-            self.selected = {'paths': []}
+        expected = 7 if payload.get('engine') == 'stormer7' else 14
+        if not paths or (payload.get('max_count') and len(paths) != expected):
+            self.selected = {'paths': paths, 'engine': payload.get('engine')}
             return self.selected
         import rawpy
         from PIL import Image
@@ -82,13 +83,13 @@ class Bridge:
         image.save(buffer, format='JPEG', quality=88)
         self.selected = {'paths': paths, 'width': width, 'height': height, 'black': black, 'white': white,
                          'preview': 'data:image/jpeg;base64,' + base64.b64encode(buffer.getvalue()).decode(),
-                         'frames': frames, 'reference': ref, 'selection_id': uuid.uuid4().hex, 'reference_name': Path(paths[ref]).name, 'warnings': [],
+                         'frames': frames, 'reference': ref, 'engine': payload.get('engine'), 'reference_name': Path(paths[ref]).name, 'warnings': [],
                          'exposure_confirmation_required': any(not f['shutter'] for f in frames),
                          'ptc_auto_available': False, 'ptc_issue': '当前包使用明确填写的满阱或手动标定参数。',
                          'fast_fullwell_resolution': {'matched': False}, 'fast_fullwell_e': 20000}
-        if len(self.selections) >= 512:
-            raise ValueError('本次批量最多缓存512组，请重新开始批量准备')
-        self.selections[self.selected['selection_id']] = self.selected
+        resolution = resolve_ptc(frames[ref])
+        self.selected.update(ptc_auto_available=resolution['matched'], auto_ptc_resolution=resolution,
+            fast_fullwell_resolution=resolution, fast_fullwell_e=resolution.get('fullwell_e', 20000))
         return self.selected
 
     def command(self, p):
@@ -96,14 +97,13 @@ class Bridge:
         names = {'fastk14': 'run_fast', 'stormer7': 'run_stormer', 'v98k14': 'run_v98'}
         if engine not in names:
             raise ValueError('未知计算模式')
-        if p.get('selection_id'):
-            if p['selection_id'] not in self.selections:
-                raise ValueError('批量选择已过期，请重新准备')
-            self.selected = self.selections[p['selection_id']]
         p = dict(p)
-        self.preset = resolve_z8(self.selected) if p.get('camera_preset') == 'z8' else None
-        if self.preset:
-            p.update(dark=self.preset['dark'], fullwell=self.preset['fullwell_e'], manual=False, confirmed=True, ptc='')
+        if p.get('camera_preset') or p.get('batch_audit'):
+            raise ValueError('17.3.1 已撤回内置黑场预设和专用批量，请提供本组实际标定')
+        if engine == 'stormer7' and not p.get('manual') and p.get('fullwell') is None and not p.get('ptc'):
+            resolution = self.selected.get('auto_ptc_resolution', {})
+            if resolution.get('matched'):
+                p['fullwell'] = resolution['fullwell_e']
         paths = self.selected['paths']
         expected = 7 if engine == 'stormer7' else 14
         if len(paths) != expected:
@@ -117,11 +117,8 @@ class Bridge:
         if self.selected['exposure_confirmation_required'] and not (p.get('equal_exposure_confirmed') or p.get('exposures')):
             raise ValueError('请确认实际曝光关系')
         destination = Path(p['output']).expanduser().resolve()
-        if not destination.is_dir():
-            if p.get('batch_audit') and destination.parent.parent.is_dir():
-                pass
-            else:
-                raise ValueError('请选择已存在的输出文件夹')
+        if not destination.is_dir() and (destination.exists() or not destination.parent.is_dir()):
+            raise ValueError('请选择输出目录或已存在目录下的新文件夹')
         prefix = str(p.get('prefix', '')).strip()
         if not prefix or len(prefix) > 80 or any(c in prefix for c in '<>:"/\\|?*') or any(ord(c) < 32 for c in prefix):
             raise ValueError('文件名前缀无效')
@@ -149,8 +146,10 @@ class Bridge:
             command += ['--memory-gb', str(number(p['memory'], 'GPU预算', .1, 128))]
         if engine == 'v98k14':
             command += ['--cache-mode', 'memmap', '--prepare-mmap-cache', '--resource-mode', 'balanced']
-            if p.get('dark'):
-                command += ['--dark-frame', str(Path(p['dark']).resolve(strict=True))]
+            dark = Path(p.get('dark') or '').expanduser().resolve()
+            if not dark.is_file() or dark.suffix.lower() not in RAW_EXTENSIONS:
+                raise ValueError('K14 必须提供实际适用的黑场 RAW')
+            command += ['--dark-frame', str(dark)]
         else:
             if p.get('fullwell') is not None:
                 command += ['--full-well-electrons' if engine == 'stormer7' else '--fullwell', str(number(p['fullwell'], '满阱', 1))]
@@ -198,10 +197,6 @@ class Bridge:
             raise ValueError('当前计算正在进行')
         command, output = self.command(p)
         output.mkdir(parents=True)
-        if self.preset:
-            (output / 'CAMERA_PRESET.json').write_text(json.dumps(self.preset, ensure_ascii=False, indent=2))
-        if p.get('batch_audit'):
-            (output / 'BATCH_GROUP.json').write_text(json.dumps(p['batch_audit'], ensure_ascii=False, indent=2))
         environment = os.environ.copy()
         environment['JSR_METAL_NETWORKS'] = 'mpsgraph'
         self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1,
@@ -255,45 +250,10 @@ class Bridge:
         return {'state': self.state}
 
     def request(self, route, payload):
-        if route == 'jsr/camera-preset':
-            selected = self.selections.get(payload.get('selection_id'), self.selected)
-            return resolve_z8(selected)
-        if route == 'jsr/batch-scan':
-            return scan(payload['folder'], payload.get('recursive', True),
-                        7 if payload.get('engine') == 'stormer7' else 14, RAW_EXTENSIONS)
-        if route == 'jsr/batch-clear-selections':
-            if self.state == 'running':
-                raise ValueError('当前计算正在进行')
-            self.selections.clear()
-            return {}
-        if route == 'jsr/batch-validate':
-            self.command(payload)
-            return {'valid': True}
-        if route == 'jsr/batch-thumbs':
-            from PIL import Image
-            import rawpy
-            photos = []
-            for path in payload.get('paths', [])[:14]:
-                try:
-                    with rawpy.imread(path) as raw:
-                        rgb = raw.postprocess(half_size=True, user_flip=0, use_camera_wb=True, output_bps=8)
-                    image = Image.fromarray(rgb); image.thumbnail((240, 180))
-                    buffer = io.BytesIO(); image.save(buffer, format='JPEG', quality=75)
-                    photos.append({'path': path, 'preview': 'data:image/jpeg;base64,' + base64.b64encode(buffer.getvalue()).decode()})
-                except Exception as error:
-                    photos.append({'path': path, 'preview_issue': str(error)})
-            return {'photos': photos}
-        if route == 'jsr/batch-report':
-            report = payload['report']
-            destination = Path(report['output']).expanduser().resolve()
-            if not destination.name.startswith('batch-') or not destination.parent.is_dir():
-                raise ValueError('批量报告路径无效')
-            destination.mkdir(exist_ok=True)
-            target = destination / 'BATCH.json'
-            temporary = target.with_suffix('.tmp')
-            temporary.write_text(json.dumps(report, ensure_ascii=False, indent=2))
-            temporary.replace(target)
-            return {'path': str(target)}
+        if route == 'jsr/camera-preset' or route.startswith('jsr/batch-'):
+            raise ValueError('17.3.1 已撤回内置黑场预设和专用批量')
+        if route == 'jsr/defaults':
+            return {'output': str(Path.home() / 'Pictures' / 'JSR_Output')}
         if route == 'jsr/options':
             index = ROOT / 'vendor/stormer/product_v152/ptc_index.csv'
             rows = []
@@ -305,7 +265,7 @@ class Bridge:
                                      'label': '%s %s · ISO %s · %.0f e⁻' % (row['brand'], row['model'].strip(), row['iso_nominal'], 1 / alpha)})
             matrix = ROOT / 'vendor/stormer/product_v152/legacy/cameraMatrices.data'
             cameras = re.findall(r'^\s*"([^"]+)"\s*:', matrix.read_text(), re.MULTILINE)
-            return {'version': '15.3.5 · Metal', 'ptc': rows, 'cameras': sorted(set(cameras))}
+            return {'version': UPSTREAM_VERSION + ' · Metal', 'ptc': rows, 'cameras': sorted(set(cameras))}
         if route == 'jsr/select':
             return self.select(payload)
         if route == 'jsr/start':

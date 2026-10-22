@@ -1,6 +1,22 @@
 import AppKit
 import WebKit
 
+final class FileDropWebView: WKWebView {
+    private func droppedFiles(_ sender: NSDraggingInfo) -> [URL] {
+        (sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL]) ?? []
+    }
+    override func draggingEntered(_ sender: NSDraggingInfo) -> NSDragOperation {
+        droppedFiles(sender).isEmpty ? super.draggingEntered(sender) : .copy
+    }
+    override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
+        let paths = droppedFiles(sender).map { $0.path }
+        guard !paths.isEmpty, let data = try? JSONSerialization.data(withJSONObject: paths),
+              let json = String(data: data, encoding: .utf8) else { return super.performDragOperation(sender) }
+        evaluateJavaScript("window.macHandleDrop?.(\(json))")
+        return true
+    }
+}
+
 final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithReply, WKNavigationDelegate, NSWindowDelegate {
     var window: NSWindow!
     var web: WKWebView!
@@ -15,7 +31,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         if let i = arguments.firstIndex(of: "--resources"), arguments.count > i + 1 { return URL(fileURLWithPath: arguments[i + 1]) }
         return Bundle.main.bundleURL.appendingPathComponent("Contents/Resources")
     }
-    var testing: Bool { arguments.contains("--self-test") || arguments.contains("--structure-test") || arguments.contains("--batch-test") }
+    var testing: Bool { arguments.contains("--self-test") || arguments.contains("--structure-test") }
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         let menu = NSMenu()
@@ -24,11 +40,12 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         item.submenu = submenu; NSApp.mainMenu = menu
         let configuration = WKWebViewConfiguration()
         configuration.userContentController.addScriptMessageHandler(self, contentWorld: .page, name: "vault")
-        web = WKWebView(frame: .zero, configuration: configuration)
+        web = FileDropWebView(frame: .zero, configuration: configuration)
+        web.registerForDraggedTypes([.fileURL])
         web.navigationDelegate = self
         web.isInspectable = false
         window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1280, height: 850), styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
-        window.title = "Jiangtherapee Bridge · Apple Silicon / Metal"
+        window.title = "JSR 17.3.1 · Apple Silicon / Metal"
         window.minSize = NSSize(width: 920, height: 650)
         window.contentView = web; window.delegate = self; window.center(); window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -78,11 +95,16 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         guard message.frameInfo.isMainFrame, message.frameInfo.request.url?.isFileURL == true,
               let body = message.body as? [String: Any], let route = body["route"] as? String else { replyHandler(nil, "请求来源无效"); return }
         var payload = body["payload"] as? [String: Any] ?? [:]
-        if route == "author" || route == "author/support" {
+        if route == "author" {
+            NSWorkspace.shared.open(URL(string: "https://y-g-jiang.github.io/")!)
+            replyHandler([:], nil); return
+        }
+        if route == "author/support" {
             web.evaluateJavaScript("document.querySelector('#author-support').showModal()")
             replyHandler([:], nil); return
         }
         if route == "jsr/select" && payload["paths"] == nil {
+            payload["append"] = true
             if testing, let i = arguments.firstIndex(of: "--fixtures"), arguments.count > i + 1 {
                 let folder = URL(fileURLWithPath: arguments[i + 1])
                 let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
@@ -99,19 +121,8 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
                 } else { payload["paths"] = panel.urls.map { $0.path } }
             }
         }
-        if route == "jsr/batch-scan" && payload["folder"] == nil {
-            if testing, let i = arguments.firstIndex(of: "--fixtures"), arguments.count > i + 1 {
-                payload["folder"] = arguments[i + 1]
-            } else {
-                let panel = NSOpenPanel(); panel.canChooseDirectories = true; panel.canChooseFiles = false
-                panel.title = "选择 Z8 连拍目录"
-                guard panel.runModal() == .OK else { replyHandler(NSNull(), nil); return }
-                payload["folder"] = panel.url!.path
-            }
-        }
-        if route == "jsr/batch-reveal" {
-            if let path = payload["output"] as? String { NSWorkspace.shared.open(URL(fileURLWithPath: path)) }
-            replyHandler([:], nil); return
+        if route == "jsr/dark", testing, let i = arguments.firstIndex(of: "--test-dark"), arguments.count > i + 1 {
+            replyHandler(["path": arguments[i + 1]], nil); return
         }
         if route == "pick" || route == "jsr/dark" {
             let panel = NSOpenPanel(); panel.canChooseDirectories = route == "pick"; panel.canChooseFiles = route == "jsr/dark"; panel.allowsMultipleSelection = false
@@ -121,7 +132,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
             if let path = outputFolder { NSWorkspace.shared.open(URL(fileURLWithPath: path)) }
             replyHandler([:], nil); return
         }
-        let allowed = ["jsr/select", "jsr/options", "jsr/start", "jsr/status", "jsr/cancel", "jsr/camera-preset", "jsr/batch-scan", "jsr/batch-clear-selections", "jsr/batch-validate", "jsr/batch-thumbs", "jsr/batch-report"]
+        let allowed = ["jsr/select", "jsr/options", "jsr/start", "jsr/status", "jsr/cancel", "jsr/defaults"]
         guard allowed.contains(route) else { replyHandler(nil, "未知请求"); return }
         forward(route, payload) { result, error in
             if route == "jsr/start", let value = result as? [String: Any] { self.outputFolder = value["output"] as? String }
@@ -132,7 +143,7 @@ final class Host: NSObject, NSApplicationDelegate, WKScriptMessageHandlerWithRep
         guard testing else { return }
         Task { @MainActor in
             do {
-                let body = self.arguments.contains("--structure-test") ? "return {host:'WKWebView',modes:document.querySelectorAll('[data-engine]').length,ui:!!document.querySelector('#jsr-start'),author:!!document.querySelector('#author-support img'),errors:document.querySelector('#mac-error').textContent};" : self.arguments.contains("--batch-test") ? "return await window.macBatchSelfTest();" : "return await window.macSelfTest(runJob);"
+                let body = self.arguments.contains("--structure-test") ? "return {host:'WKWebView',modes:document.querySelectorAll('[data-engine]').length,ui:!!document.querySelector('#jsr-start'),author:!!document.querySelector('#author-support img'),errors:document.querySelector('#mac-error').textContent};" : "return await window.macSelfTest(runJob);"
                 let value = try await webView.callAsyncJavaScript(body, arguments: ["runJob": self.arguments.contains("--job-test")], in: nil, contentWorld: .page)
                 let data = try JSONSerialization.data(withJSONObject: value!, options: [.sortedKeys])
                 print(String(data: data, encoding: .utf8)!)

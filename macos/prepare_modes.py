@@ -1,4 +1,4 @@
-"""Extract original Stormer and v9.8 modules and model resources from Bridge 2.3.27."""
+"""Extract original Stormer and K14 modules and model resources from the pinned release."""
 from pathlib import Path
 import argparse
 import hashlib
@@ -13,10 +13,10 @@ from PyInstaller.archive.readers import CArchiveReader, ZlibArchiveReader
 from release import ARCHIVE_SHA256, PREFIX, TAG, sha256
 
 MODULES = {
-    'stormer': ('jsr_backend', set('''batch_bridge backend bridge_preview color_profile developer dng_repack native_dng
+    'stormer': ('jsr_backend', set('''measured_dark_lut batch_bridge backend bridge_preview color_profile developer dng_repack native_dng
         output_chain profile_metadata ptc selftest sensor srhq_joraw2 v124_dng v82_lca
         v82_lossless_dng whitepoint'''.split())),
-    'v98': ('jsr_v98_k14_backend', set('''_srhq_kernels alias_v6 batch_raw_probe block_align bsr_steer
+    'v98': ('jsr_v98_k14_backend', set('''measured_dark_lut _srhq_kernels alias_v6 batch_raw_probe block_align bsr_steer
         exp_rawmerge fast_gated_cm_png highlight_recovery local_v7_frontend make_jdng make_sharp_jdng
         modelb_align newpipe_homog perceptual_sharpen render_cm_png sharpen_cupy srhq_joraw2 srhq_pou
         v82_lca v82_lossless_dng v82_wgpu_product_adapter v82_wgpu_product_engine v94_wgpu_wrapper
@@ -47,6 +47,8 @@ def main():
     with zipfile.ZipFile(args.archive) as release:
         for mode, (exe, names) in MODULES.items():
             output = base / mode
+            if output.exists():
+                shutil.rmtree(output)
             output.mkdir(exist_ok=True)
             binary = base / (exe + '.exe')
             binary.write_bytes(release.read(prefix + binary.name))
@@ -70,6 +72,9 @@ def main():
                 elif record[-1] == 's' and not name.startswith('pyi'):
                     (output / (name + '_entry.pyc')).write_bytes(importlib.util.MAGIC_NUMBER + bytes(12) + packed.extract(name))
             if mode == 'stormer':
+                # The standalone entry puts wgpu first; populate that package with
+                # the current PYZ modules rather than older embedded helpers.
+                shutil.copytree(output / 'v15_2', output / 'wgpu/v15_2', dirs_exist_ok=True)
                 for name in ['conv_shader.py', 'conv_shader.pyc']:
                     shutil.copyfile(base / 'fast' / name, output / name)
                     shutil.copyfile(base / 'fast' / name, output / 'wgpu' / name)

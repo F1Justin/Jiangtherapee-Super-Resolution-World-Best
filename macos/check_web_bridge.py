@@ -11,6 +11,7 @@ def main():
     parser.add_argument('--cli', type=Path, required=True)
     parser.add_argument('--fixtures', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--dark', type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     worker = subprocess.Popen([str(args.cli.resolve()), 'web-worker'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
@@ -37,9 +38,18 @@ def main():
                    'manual':True,'black':selected['black'],'read_noise':0,'fullwell':20000,
                    'memory':4,'host_memory':12,'cpu_cores':4,'dng':True,'tiff':True,'preview':False,
                    'format':'jpeg','quality':95,'color':'libraw'}
-        for engine in ('fastk14', 'v98k14'):
+        try:
+            request('jsr/start', {**payload, 'engine': 'v98k14'})
+        except ValueError as error:
+            assert '黑场' in str(error)
+            results['k14_requires_dark'] = True
+        else:
+            raise RuntimeError('K14 accepted missing dark')
+        for engine in ('fastk14', 'v98k14', 'stormer7'):
+            selected = request('jsr/select', {'paths':files[:7] if engine=='stormer7' else files, 'engine':engine})
             start = time.monotonic()
-            task = request('jsr/start', {**payload,'engine':engine,'memory':None if engine=='v98k14' else 4})
+            task = request('jsr/start', {**payload, 'engine':engine, 'dark':str(args.dark.resolve()),
+                'deghost':engine=='stormer7', 'memory':None if engine=='v98k14' else 6})
             while time.monotonic() - start < 180:
                 status = request('jsr/status')
                 if status['state'] != 'running':
@@ -60,6 +70,7 @@ def main():
             if shape[:2] != [selected['height']*2,selected['width']*2] or len(shape) != 3 or shape[2] not in (3,4):
                 raise RuntimeError('Output shape: '+str(shape))
             results[engine] = {'state':status['state'],'seconds':round(time.monotonic()-start,2),'shape':shape}
+        request('jsr/select', {'paths':files,'engine':'fastk14'})
         task = request('jsr/start',payload)
         time.sleep(.5)
         cancelled = request('jsr/cancel')

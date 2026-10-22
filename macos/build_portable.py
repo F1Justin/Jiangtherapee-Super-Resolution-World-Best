@@ -12,7 +12,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent
 from release import VERSION, UPSTREAM_VERSION, TAG, ARCHIVE_SHA256
-MODULES = ('release', 'camera_presets', 'batch_workflow', 'output_metadata', 'portable_cli', 'web_bridge', 'gui', 'run_fast', 'run_stormer', 'run_v98', 'finish',
+MODULES = ('release', 'camera_calibration', 'output_metadata', 'portable_cli', 'web_bridge', 'gui', 'run_fast', 'run_stormer', 'run_v98', 'finish',
            'job_resources', 'metal_graph', 'metal_platform', 'native_fusion',
            'optimization_support', 'refine_schedule', 'check_native_fusion')
 MACH_MAGIC = (b'\xcf\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca')
@@ -108,7 +108,7 @@ def relocate(resources, source_prefixes):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=ROOT / 'dist' / ('JSR-Bridge-' + VERSION + '-macOS-arm64-portable'))
+    parser.add_argument('--output', type=Path, default=ROOT / 'dist' / ('JSR-' + VERSION + '-macOS-arm64-portable'))
     parser.add_argument('--resume', action='store_true', help='Reuse copied payload and rebuild launch metadata')
     args = parser.parse_args()
     if sys.version_info[:2] != (3, 10):
@@ -150,8 +150,7 @@ def main():
                 target = vendor / mode / source.relative_to(ROOT / 'vendor' / mode)
                 # Release modules address these tiny bytecode loaders by their .py names.
                 shutil.copy2(source, target)
-        shutil.copytree(ROOT / 'vendor/z8_presets', vendor / 'z8_presets')
-        shutil.copytree(ROOT / 'vendor/licenses', resources / 'Licenses/Upstream-2.3.27')
+        shutil.copytree(ROOT / 'vendor/licenses', resources / ('Licenses/Upstream-' + UPSTREAM_VERSION))
         rawlib = vendor / 'libraw/lib'
         rawlib.mkdir(parents=True)
         for name in ('jsr_raw_bridge.dylib', 'libraw_r.25.dylib'):
@@ -206,7 +205,7 @@ def main():
     (contents / 'Info.plist').write_bytes(plistlib.dumps({
         'CFBundleIdentifier':'com.f1justin.jsrbridge.preview', 'CFBundleName':'JSR Bridge',
         'CFBundleDisplayName':'JSR Bridge', 'CFBundleExecutable':'JSR', 'CFBundlePackageType':'APPL',
-        'CFBundleVersion':'1', 'CFBundleShortVersionString':UPSTREAM_VERSION,
+        'CFBundleVersion':UPSTREAM_VERSION, 'CFBundleShortVersionString':UPSTREAM_VERSION,
         'NSHighResolutionCapable':True,'LSMinimumSystemVersion':'14.0'}))
     wrapper = output / 'jsr'
     wrapper.write_text('''#!/bin/zsh
@@ -221,7 +220,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 exec "$here/jsr" gui
 ''')
     (output / '启动 GUI.command').chmod(0o755)
-    (output / '使用说明.txt').write_text('''Jiangtherapee Bridge 2.3.27 · macOS arm64 1
+    (output / '使用说明.txt').write_text('''JSR 17.3.1 · macOS arm64 1
 
 要求：Apple Silicon，macOS 14 或更高版本。已在 M2 Pro / macOS 27.2 验证。
 解压并保持整个目录完整，双击 JSR Bridge.app 或 启动 GUI.command。
@@ -236,12 +235,13 @@ exec "$here/jsr" gui
 ./jsr v98 --help
 
 v9.8 全图示例：
-./jsr v98 --raw-frame /路径/01.nef [继续重复 --raw-frame，合计14张] --output-dir /输出/新目录 --cache-mode memmap --prepare-mmap-cache --resource-mode balanced --camera-profile-source libraw --out-dng on --out-tiff on --out-png off
+./jsr v98 --raw-frame /路径/01.nef [继续重复 --raw-frame，合计14张] --output-dir /输出/新目录 --cache-mode memmap --prepare-mmap-cache --resource-mode balanced --dark-frame /路径/匹配黑场.nef --camera-profile-source libraw --out-dng on --out-tiff on --out-png off
 
 Fast 使用14张；Stormer使用7张；v9.8使用14张。
-GUI使用作者原版 HTML 控制面板，由系统 WKWebView 承载。
+GUI使用官方独立版 HTML 控制面板，由系统 WKWebView 承载，支持文件拖入。
 Fast/Stormer需匹配暗场或手动标定。0 DN/20000电子仅供测试，实际拍摄使用实测标定。
-v9.8使用MPSGraph/Metal加速与原生无损压缩DNG。Z8内置黑场、批量分组可在GUI中使用。
+K14必须选择实际适用的黑场，使用MPSGraph/Metal加速与原生无损压缩DNG。
+Stormer使用全局单应与高光掩膜残差配准。官方已撤回Z8/S5II内置黑场和专用批量界面。
 输出路径下每次创建独立任务目录，保留processing.log和缓存。
 输出、配准缓存和处理日志保存在所选输出目录。保留足够的磁盘空间。
 移动整个 portable 目录后，GUI和CLI仍使用同包依赖。
@@ -249,8 +249,9 @@ v9.8使用MPSGraph/Metal加速与原生无损压缩DNG。Z8内置黑场、批量
 本包采用本机 ad-hoc 签名，尚未 Apple notarization。系统可能提示来源未验证。
 请使用系统设置中的“隐私与安全性 → 仍要打开”批准本包。
 第三方许可、LibRaw源码及Nikon HE补丁在应用 Contents/Resources/Licenses。
-本包为 F1Justin 独立维护的 macOS 移植，基于官方 Bridge 2.3.27。
-本包提供 JSR 三模式和 Z8 批量工作流；不包含 Windows Bridge 照片库与 DeepSeek 助手。
+本包为 F1Justin 独立维护的 macOS 移植，基于官方独立 JSR 17.3.1。
+本包提供 JSR 三模式；DeepSeek 助手未移植。
+LibRaw源码来自同一解码器的已校验Bridge 2.3.27源码归档，随包提供。
 ''')
     run(['codesign', '--force', '--sign', '-', app])
     run(['codesign', '--verify', '--deep', '--strict', app])
